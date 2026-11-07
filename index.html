@@ -293,6 +293,7 @@
   function viewDay() {
     var d = addDays(mondayOf(today()), openDay), si = sessionFor(openDay);
     if (si < 0) { tab = "week"; return viewWeek(); }   // no longer a lift day (e.g. lift days changed)
+    if (openDay === dayIdx(today())) { tab = "today"; return viewToday(); }   // previewed day is now today (app reopened next morning)
     var s = P.sessions[si], ci = cycleInfo(d);
     var h = '<div class="top"><button class="back" data-goto="week">‹ Week</button>' + cyclePill(ci) + "</div>";
     h += '<div class="muted" style="font-size:20px;margin-top:14px">' + esc(DAY_LONG[openDay]) + " " + d.getDate() + " " +
