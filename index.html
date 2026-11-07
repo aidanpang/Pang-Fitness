@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lift">
+<meta name="theme-color" content="#0b0d10">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>Pang Fitness</title>
+<style>
+  :root {
+    --bg: #0b0d10;
+    --card: #161a20;
+    --card2: #1f252d;
+    --line: #2a313b;
+    --text: #f2f4f7;
+    --dim: #9aa4b2;
+    --accent: #3ddc97;
+    --accent-ink: #062b1c;
+    --warn: #ffb648;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 18px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 96px);
+    max-width: 640px; margin: 0 auto;
+  }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  h1 { font-size: 40px; line-height: 1.05; margin: 4px 0 6px; letter-spacing: -0.5px; }
+  h2 { font-size: 22px; margin: 28px 0 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+  .muted { color: var(--dim); }
+
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--dim); font-size: 17px; }
+  .pill { display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--card2); font-weight: 600; color: var(--text); }
+  .pill.deload { background: var(--warn); color: #2b1a00; }
+
+  .banner { background: var(--warn); color: #2b1a00; border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 20px; margin: 12px 0; }
+
+  .big-btn {
+    display: block; width: 100%; padding: 18px; border-radius: 16px;
+    background: var(--card2); font-size: 20px; font-weight: 700; margin-top: 12px;
+  }
+  .big-btn.primary { background: var(--accent); color: var(--accent-ink); }
+
+  .card {
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    background: var(--card); border: 2px solid var(--line); border-radius: 18px;
+    padding: 16px; margin: 10px 0;
+  }
+  .card .check {
+    flex: 0 0 44px; height: 44px; border-radius: 50%; border: 3px solid var(--line);
+    display: grid; place-items: center; font-size: 26px; font-weight: 900; color: transparent;
+  }
+  .card .body { flex: 1; min-width: 0; }
+  .card .name { font-size: 24px; font-weight: 700; line-height: 1.15; }
+  .card .sr { font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
+  .card .meta { font-size: 18px; color: var(--dim); margin-top: 2px; }
+  .card.done { border-color: var(--accent); opacity: 0.55; }
+  .card.done .check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .card.done .name { text-decoration: line-through; }
+  .warm li { font-size: 20px; margin: 4px 0; }
+  .warm ul { margin: 6px 0 0; padding-left: 22px; }
+
+  .rest-day { text-align: center; padding: 40px 0 10px; }
+  .rest-day .emoji { font-size: 72px; }
+
+  .week-row {
+    display: flex; align-items: center; gap: 14px; background: var(--card);
+    border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; margin: 8px 0;
+  }
+  .week-row.today { border-color: var(--accent); }
+  .week-row .d { width: 64px; font-size: 22px; font-weight: 800; }
+  .week-row .s { flex: 1; font-size: 20px; }
+  .week-row .s b { display: block; }
+  .week-row.off .s { color: var(--dim); }
+
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .day-btn {
+    padding: 18px 0; border-radius: 14px; background: var(--card2); font-size: 17px; font-weight: 700;
+    border: 2px solid transparent;
+  }
+  .day-btn.on { background: var(--accent); color: var(--accent-ink); }
+
+  input[type=date] {
+    width: 100%; font: inherit; font-size: 20px; padding: 14px; border-radius: 14px;
+    background: var(--card2); color: var(--text); border: 2px solid var(--line);
+    -webkit-appearance: none; appearance: none; min-height: 56px;
+  }
+  .note { background: var(--card); border-radius: 16px; padding: 6px 18px; border: 2px solid var(--line); }
+  .note li { margin: 10px 0; font-size: 19px; }
+  .note ul { padding-left: 20px; }
+
+  nav {
+    position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px;
+    padding: 10px 12px calc(env(safe-area-inset-bottom) + 10px);
+    background: rgba(11,13,16,0.94); border-top: 1px solid var(--line);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  nav button { flex: 1; padding: 14px 0; border-radius: 14px; background: transparent; font-size: 18px; font-weight: 700; color: var(--dim); }
+  nav button.active { background: var(--card2); color: var(--text); }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav>
+  <button data-tab="today">Today</button>
+  <button data-tab="week">Week</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+
+<script src="program.js"></script>
+<script>
+(function () {
+  var P = window.PROGRAM;
+  var DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  var DAY_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  var KEY = "pangFitness.v1";
+  var tab = "today";
+
+  // ---------- dates (all local, date-only) ----------
+  function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function dayIdx(d) { return (d.getDay() + 6) % 7; }            // Mon = 0 ... Sun = 6
+  function mondayOf(d) { return addDays(d, -dayIdx(d)); }
+  function iso(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function parseIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+  function nice(d) { return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }); }
+
+  // ---------- saved data (on this phone only) ----------
+  var S = load();
+  function load() {
+    var s = {};
+    try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+    if (!Array.isArray(s.liftDays)) s.liftDays = [0, 2, 4];              // Mon, Wed, Fri
+    if (!s.startDate) s.startDate = iso(mondayOf(today()));
+    if (!s.order || s.order.week !== iso(mondayOf(today()))) s.order = null;   // swaps reset each week
+    if (!s.ticks || s.ticks.date !== iso(today())) s.ticks = null;         // ticks reset each day
+    return s;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  // ---------- program logic ----------
+  function cycleInfo() {
+    var w = Math.floor(daysBetween(parseIso(S.startDate), today()) / 7);
+    if (w < 0) return { notStarted: true };
+    var n = P.cycleWeeks || 5;
+    return { week: (w % n) + 1, cycle: Math.floor(w / n) + 1, deload: (w % n) + 1 === n, of: n };
+  }
+  function sortedLiftDays() { return S.liftDays.slice().sort(function (a, b) { return a - b; }); }
+  function weekOrder() {
+    if (S.order) return S.order.list;
+    return P.sessions.map(function (_, i) { return i; });
+  }
+  // Which session (index) falls on a weekday this week, or -1 for a rest day
+  function sessionFor(wd) {
+    var pos = sortedLiftDays().indexOf(wd);
+    if (pos < 0) return -1;
+    var order = weekOrder();
+    return order[pos % order.length];
+  }
+  function swapToday() {
+    var pos = sortedLiftDays().indexOf(dayIdx(today()));
+    if (pos < 0) return;
+    var list = weekOrder().slice();
+    var n = Math.min(sortedLiftDays().length, list.length);
+    if (pos < n - 1) {
+      // rotate today + the rest of this week's sessions, so you still get them all in
+      var rest = list.slice(pos, n);
+      rest.push(rest.shift());
+      list = list.slice(0, pos).concat(rest, list.slice(n));
+    } else {
+      // last lift day of the week: just step to the next session
+      list[pos % list.length] = (list[pos % list.length] + 1) % P.sessions.length;
+    }
+    S.order = { week: iso(mondayOf(today())), list: list };
+    S.ticks = null;
+    save(); render();
+  }
+  function sets(ex, deload) { return deload ? Math.ceil(ex.sets / 2) : ex.sets; }
+
+  function isDone(id) { return !!(S.ticks && S.ticks.done[id]); }
+  function toggle(id) {
+    if (!S.ticks) S.ticks = { date: iso(today()), done: {} };
+    S.ticks.done[id] = !S.ticks.done[id];
+    save(); render();
+  }
+
+  // ---------- views ----------
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function cyclePill(ci) {
+    if (ci.notStarted) return '<span class="pill">Starts ' + esc(nice(parseIso(S.startDate))) + "</span>";
+    return '<span class="pill' + (ci.deload ? " deload" : "") + '">Week ' + ci.week + " of " + ci.of + (ci.deload ? " · Deload" : "") + "</span>";
+  }
+
+  function rulesNote() {
+    return '<h2>How to run it</h2><div class="note"><ul>' +
+      P.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul></div>";
+  }
+
+  function viewToday() {
+    var t = today(), ci = cycleInfo(), si = sessionFor(dayIdx(t));
+    var h = '<div class="top"><span>' + esc(DAY_LONG[dayIdx(t)]) + " " + t.getDate() + " " +
+      t.toLocaleDateString(undefined, { month: "short" }) + "</span>" + cyclePill(ci) + "</div>";
+
+    if (si < 0) {
+      var next = null;
+      for (var i = 1; i <= 7; i++) { var d = addDays(t, i); if (S.liftDays.indexOf(dayIdx(d)) >= 0) { next = d; break; } }
+      h += '<div class="rest-day"><div class="emoji">🌊</div><h1>Rest day</h1><p class="muted" style="font-size:20px">Go surf.' +
+        (next ? "<br>Next lift: <b style='color:var(--text)'>" + esc(DAY_LONG[dayIdx(next)]) + "</b>" : "") + "</p></div>";
+      return h + rulesNote();
+    }
+
+    var s = P.sessions[si], deload = ci.deload;
+    var ids = ["warmup"].concat(s.exercises.map(function (_, i) { return "ex" + i; }));
+    var doneCount = ids.filter(isDone).length;
+
+    h += "<h1>" + esc(s.name) + " · " + esc(s.title) + "</h1>";
+    h += '<div class="muted" style="font-size:20px">' + doneCount + " of " + ids.length + " done</div>";
+    if (deload) h += '<div class="banner">Deload week: half the sets (already halved below)</div>';
+
+    h += '<div role="button" class="card warm' + (isDone("warmup") ? " done" : "") + '" data-tick="warmup">' +
+      '<span class="check">✓</span><span class="body"><span class="name">' + esc(P.warmup.title) + "</span><ul>" +
+      P.warmup.items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></span></div>";
+
+    s.exercises.forEach(function (ex, i) {
+      var id = "ex" + i;
+      h += '<div role="button" class="card' + (isDone(id) ? " done" : "") + '" data-tick="' + id + '">' +
+        '<span class="check">✓</span><span class="body">' +
+        '<span class="name" style="display:block">' + esc(ex.name) + "</span>" +
+        '<span class="sr" style="display:block">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
+        '<span class="meta" style="display:block">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>" +
+        "</span></div>";
+    });
+
+    if (doneCount === ids.length) h += '<div class="banner" style="background:var(--accent);color:var(--accent-ink)">Session done. Nice work. 🤙</div>';
+
+    h += '<button class="big-btn" id="swap">⇄ Swap session (shoulders cooked?)</button>';
+    return h + rulesNote();
+  }
+
+  function viewWeek() {
+    var t = today(), mon = mondayOf(t), ci = cycleInfo();
+    var h = '<div class="top"><span>This week</span>' + cyclePill(ci) + "</div><h1>Week</h1>";
+    if (ci.deload) h += '<div class="banner">Deload week: half the sets</div>';
+    for (var i = 0; i < 7; i++) {
+      var d = addDays(mon, i), si = sessionFor(i), isT = iso(d) === iso(t);
+      var s = si >= 0 ? P.sessions[si] : null;
+      h += '<div class="week-row' + (isT ? " today" : "") + (s ? "" : " off") + '">' +
+        '<span class="d">' + DAY_NAMES[i] + "</span>" +
+        '<span class="s">' + (s ? "<b>" + esc(s.name) + "</b>" + esc(s.title) : "Rest / surf") + "</span>" +
+        (isT ? '<span class="pill">Today</span>' : "") + "</div>";
+    }
+    h += '<button class="big-btn" data-goto="settings">Change lift days</button>';
+    return h + rulesNote();
+  }
+
+  function viewSettings() {
+    var h = "<h1>Settings</h1>";
+    h += "<h2>Lift days</h2><p class='muted' style='margin-top:0'>Pick 3. Sessions go Day 1 → 2 → 3 in order.</p><div class='days'>";
+    for (var i = 0; i < 7; i++) {
+      h += '<button class="day-btn' + (S.liftDays.indexOf(i) >= 0 ? " on" : "") + '" data-day="' + i + '">' + DAY_NAMES[i] + "</button>";
+    }
+    h += "</div>";
+    var c = S.liftDays.length;
+    h += "<p class='muted'>" + (c === 3 ? "✓ 3 days picked" : c + " picked. Tap to pick " + (c < 3 ? "more" : "fewer") + ".") + "</p>";
+
+    var ci = cycleInfo();
+    h += "<h2>5-week cycle</h2>";
+    h += "<p style='margin-top:0'>" + (ci.notStarted ? "Not started yet." : "You're in <b>week " + ci.week + " of " + ci.of + "</b>" + (ci.cycle > 1 ? " (cycle " + ci.cycle + ")" : "") + ".") + "</p>";
+    h += "<label class='muted' for='start'>Cycle start date (week 1 begins here)</label>";
+    h += '<input type="date" id="start" value="' + esc(S.startDate) + '">';
+    h += '<button class="big-btn primary" id="restart">Start new cycle this week</button>';
+    h += "<p class='muted' style='font-size:15px;margin-top:28px'>Everything is saved on this phone only. No account, no server.</p>";
+    return h;
+  }
+
+  // ---------- render + events ----------
+  var wakeLock = null;
+  function keepAwake(on) {
+    try {
+      if (on && !wakeLock && navigator.wakeLock) {
+        navigator.wakeLock.request("screen").then(function (l) { wakeLock = l; l.addEventListener("release", function () { wakeLock = null; }); }).catch(function () {});
+      } else if (!on && wakeLock) { wakeLock.release(); wakeLock = null; }
+    } catch (e) {}
+  }
+
+  function render() {
+    var app = document.getElementById("app");
+    app.innerHTML = tab === "week" ? viewWeek() : tab === "settings" ? viewSettings() : viewToday();
+    document.querySelectorAll("nav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
+    keepAwake(tab === "today" && sessionFor(dayIdx(today())) >= 0);
+  }
+
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("button, [data-tick]");
+    if (!el) return;
+    if (el.dataset.tab) { tab = el.dataset.tab; window.scrollTo(0, 0); render(); return; }
+    if (el.dataset.goto) { tab = el.dataset.goto; window.scrollTo(0, 0); render(); return; }
+    if (el.dataset.tick) { toggle(el.dataset.tick); return; }
+    if (el.id === "swap") { swapToday(); return; }
+    if (el.dataset.day) {
+      var d = +el.dataset.day, k = S.liftDays.indexOf(d);
+      if (k >= 0) S.liftDays.splice(k, 1);
+      else if (S.liftDays.length < 3) S.liftDays.push(d);
+      else return;                       // already 3 picked: untick one first
+      S.order = null;                    // new days = fresh Day 1/2/3 order
+      save(); render(); return;
+    }
+    if (el.id === "restart") {
+      if (confirm("Start a new 5-week cycle from this Monday?")) {
+        S.startDate = iso(mondayOf(today())); save(); render();
+      }
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    if (e.target.id === "start" && e.target.value) { S.startDate = e.target.value; save(); render(); }
+  });
+
+  // When you come back to the app (e.g. next morning), refresh for the new day
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") { S = load(); render(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
