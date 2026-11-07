@@ -75,11 +75,17 @@
     display: flex; align-items: center; gap: 14px; background: var(--card);
     border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; margin: 8px 0;
   }
+  button.week-row { width: 100%; text-align: left; }
   .week-row.today { border-color: var(--accent); }
   .week-row .d { width: 64px; font-size: 22px; font-weight: 800; }
   .week-row .s { flex: 1; font-size: 20px; }
   .week-row .s b { display: block; }
+  .week-row .s .tag { display: block; font-size: 16px; color: var(--warn); font-weight: 700; }
   .week-row.off .s { color: var(--dim); }
+  .week-row .go { font-size: 34px; color: var(--dim); line-height: 1; }
+  .back { background: var(--card2); padding: 10px 16px; border-radius: 999px; font-size: 18px; font-weight: 700; }
+  .card.preview { cursor: default; }
+  .card.preview .check { display: none; }
 
   .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
   .day-btn {
@@ -122,7 +128,8 @@
   var DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   var DAY_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   var KEY = "pangFitness.v1";
-  var tab = "today";
+  var tab = "today";      // "today" | "week" | "day" | "settings"
+  var openDay = 0;        // which weekday the "day" view is showing (Mon = 0)
 
   // ---------- dates (all local, date-only) ----------
   function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
@@ -150,8 +157,9 @@
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
   // ---------- program logic ----------
-  function cycleInfo() {
-    var w = Math.floor(daysBetween(parseIso(S.startDate), today()) / 7);
+  // Where a date sits in the 5-week cycle (defaults to today)
+  function cycleInfo(date) {
+    var w = Math.floor(daysBetween(parseIso(S.startDate), date || today()) / 7);
     if (w < 0) return { notStarted: true };
     var n = P.cycleWeeks || 5;
     return { week: (w % n) + 1, cycle: Math.floor(w / n) + 1, deload: (w % n) + 1 === n, of: n };
@@ -208,6 +216,29 @@
       P.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul></div>";
   }
 
+  // Warm-up + exercise cards. tickable = Today (tap to tick); otherwise a read-only preview.
+  function sessionCards(s, deload, tickable) {
+    var h = "";
+    if (deload) h += '<div class="banner">Deload week: half the sets (already halved below)</div>';
+    function open(id) {
+      return tickable
+        ? '<div role="button" class="card' + (isDone(id) ? " done" : "") + (id === "warmup" ? " warm" : "") + '" data-tick="' + id + '">'
+        : '<div class="card preview' + (id === "warmup" ? " warm" : "") + '">';
+    }
+    h += open("warmup") +
+      '<span class="check">✓</span><span class="body"><span class="name">' + esc(P.warmup.title) + "</span><ul>" +
+      P.warmup.items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></span></div>";
+    s.exercises.forEach(function (ex, i) {
+      h += open("ex" + i) +
+        '<span class="check">✓</span><span class="body">' +
+        '<span class="name" style="display:block">' + esc(ex.name) + "</span>" +
+        '<span class="sr" style="display:block">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
+        '<span class="meta" style="display:block">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>" +
+        "</span></div>";
+    });
+    return h;
+  }
+
   function viewToday() {
     var t = today(), ci = cycleInfo(), si = sessionFor(dayIdx(t));
     var h = '<div class="top"><span>' + esc(DAY_LONG[dayIdx(t)]) + " " + t.getDate() + " " +
@@ -221,27 +252,13 @@
       return h + rulesNote();
     }
 
-    var s = P.sessions[si], deload = ci.deload;
+    var s = P.sessions[si];
     var ids = ["warmup"].concat(s.exercises.map(function (_, i) { return "ex" + i; }));
     var doneCount = ids.filter(isDone).length;
 
     h += "<h1>" + esc(s.name) + " · " + esc(s.title) + "</h1>";
     h += '<div class="muted" style="font-size:20px">' + doneCount + " of " + ids.length + " done</div>";
-    if (deload) h += '<div class="banner">Deload week: half the sets (already halved below)</div>';
-
-    h += '<div role="button" class="card warm' + (isDone("warmup") ? " done" : "") + '" data-tick="warmup">' +
-      '<span class="check">✓</span><span class="body"><span class="name">' + esc(P.warmup.title) + "</span><ul>" +
-      P.warmup.items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></span></div>";
-
-    s.exercises.forEach(function (ex, i) {
-      var id = "ex" + i;
-      h += '<div role="button" class="card' + (isDone(id) ? " done" : "") + '" data-tick="' + id + '">' +
-        '<span class="check">✓</span><span class="body">' +
-        '<span class="name" style="display:block">' + esc(ex.name) + "</span>" +
-        '<span class="sr" style="display:block">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
-        '<span class="meta" style="display:block">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>" +
-        "</span></div>";
-    });
+    h += sessionCards(s, ci.deload, true);
 
     if (doneCount === ids.length) h += '<div class="banner" style="background:var(--accent);color:var(--accent-ink)">Session done. Nice work. 🤙</div>';
 
@@ -252,16 +269,39 @@
   function viewWeek() {
     var t = today(), mon = mondayOf(t), ci = cycleInfo();
     var h = '<div class="top"><span>This week</span>' + cyclePill(ci) + "</div><h1>Week</h1>";
-    if (ci.deload) h += '<div class="banner">Deload week: half the sets</div>';
+    h += '<p class="muted" style="margin:0 0 4px">Tap a lift day to see the workout.</p>';
     for (var i = 0; i < 7; i++) {
       var d = addDays(mon, i), si = sessionFor(i), isT = iso(d) === iso(t);
       var s = si >= 0 ? P.sessions[si] : null;
-      h += '<div class="week-row' + (isT ? " today" : "") + (s ? "" : " off") + '">' +
-        '<span class="d">' + DAY_NAMES[i] + "</span>" +
-        '<span class="s">' + (s ? "<b>" + esc(s.name) + "</b>" + esc(s.title) : "Rest / surf") + "</span>" +
-        (isT ? '<span class="pill">Today</span>' : "") + "</div>";
+      var right = (isT ? '<span class="pill">Today</span>' : "") + (s ? '<span class="go">›</span>' : "");
+      if (s) {
+        h += '<button class="week-row' + (isT ? " today" : "") + '" data-open="' + i + '">' +
+          '<span class="d">' + DAY_NAMES[i] + "</span>" +
+          '<span class="s"><b>' + esc(s.name) + "</b>" + esc(s.title) +
+          (cycleInfo(d).deload ? '<span class="tag">Deload: half sets</span>' : "") + "</span>" +
+          right + "</button>";
+      } else {
+        h += '<div class="week-row off' + (isT ? " today" : "") + '">' +
+          '<span class="d">' + DAY_NAMES[i] + '</span><span class="s">Rest / surf</span>' + right + "</div>";
+      }
     }
     h += '<button class="big-btn" data-goto="settings">Change lift days</button>';
+    return h + rulesNote();
+  }
+
+  // Read-only look at another day's workout this week (opened from the Week view)
+  function viewDay() {
+    var d = addDays(mondayOf(today()), openDay), si = sessionFor(openDay);
+    if (si < 0) { tab = "week"; return viewWeek(); }   // no longer a lift day (e.g. lift days changed)
+    if (openDay === dayIdx(today())) { tab = "today"; return viewToday(); }   // previewed day is now today (app reopened next morning)
+    var s = P.sessions[si], ci = cycleInfo(d);
+    var h = '<div class="top"><button class="back" data-goto="week">‹ Week</button>' + cyclePill(ci) + "</div>";
+    h += '<div class="muted" style="font-size:20px;margin-top:14px">' + esc(DAY_LONG[openDay]) + " " + d.getDate() + " " +
+      d.toLocaleDateString(undefined, { month: "short" }) + "</div>";
+    h += "<h1>" + esc(s.name) + " · " + esc(s.title) + "</h1>";
+    h += '<div class="muted" style="font-size:17px">Preview only. Tick exercises off on the day, in the Today tab.</div>';
+    h += sessionCards(s, ci.deload, false);
+    h += '<button class="big-btn" data-goto="week">‹ Back to week</button>';
     return h + rulesNote();
   }
 
@@ -281,6 +321,7 @@
     h += "<label class='muted' for='start'>Cycle start date (week 1 begins here)</label>";
     h += '<input type="date" id="start" value="' + esc(S.startDate) + '">';
     h += '<button class="big-btn primary" id="restart">Start new cycle this week</button>';
+    h += "<h2>Exercises</h2><p class='muted' style='margin-top:0'>To change exercises, sets or reps, edit the <b style='color:var(--text)'>program.js</b> file in your GitHub repo. The README has the steps.</p>";
     h += "<p class='muted' style='font-size:15px;margin-top:28px'>Everything is saved on this phone only. No account, no server.</p>";
     return h;
   }
@@ -297,8 +338,9 @@
 
   function render() {
     var app = document.getElementById("app");
-    app.innerHTML = tab === "week" ? viewWeek() : tab === "settings" ? viewSettings() : viewToday();
-    document.querySelectorAll("nav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
+    app.innerHTML = tab === "week" ? viewWeek() : tab === "day" ? viewDay() : tab === "settings" ? viewSettings() : viewToday();
+    var navTab = tab === "day" ? "week" : tab;          // a day's workout lives under Week
+    document.querySelectorAll("nav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === navTab); });
     keepAwake(tab === "today" && sessionFor(dayIdx(today())) >= 0);
   }
 
@@ -307,6 +349,12 @@
     if (!el) return;
     if (el.dataset.tab) { tab = el.dataset.tab; window.scrollTo(0, 0); render(); return; }
     if (el.dataset.goto) { tab = el.dataset.goto; window.scrollTo(0, 0); render(); return; }
+    if (el.dataset.open) {
+      // today's lift day opens the tickable Today screen; other days open a preview
+      openDay = +el.dataset.open;
+      tab = openDay === dayIdx(today()) ? "today" : "day";
+      window.scrollTo(0, 0); render(); return;
+    }
     if (el.dataset.tick) { toggle(el.dataset.tick); return; }
     if (el.id === "swap") { swapToday(); return; }
     if (el.dataset.day) {
