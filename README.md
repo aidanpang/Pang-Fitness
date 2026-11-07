@@ -4,7 +4,7 @@ A tiny iPhone web app for sticking to a 3-day-a-week weights program around surf
 
 - **Today** – opens straight to today's session (warm-up + exercises, sets × reps, rest). Tap a card to tick it off. Rest days say "Go surf" and show your next lift day.
 - **Swap** – shoulders cooked? Tap *Swap session* to switch today's session. The rest of the week re-shuffles so you still get all three sessions in.
-- **Week** – the 7 days at a glance.
+- **Week** – the 7 days at a glance. Tap any lift day to see that workout (sets × reps, rest). Tapping today's lift day takes you to Today, where you tick things off.
 - **Settings** – pick your 3 lift days, and set/reset the start date of your 5-week cycle.
 - **5-week cycle** – shows "Week X of 5". Week 5 is the deload: sets are automatically halved.
 - **How to run it** – the rules are shown under every session.
