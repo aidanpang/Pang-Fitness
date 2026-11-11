@@ -108,6 +108,10 @@
   }
   .undo::before { content: ""; position: absolute; inset: -12px -14px -14px -12px; }
   .undo .icon { width: 17px; height: 17px; stroke-width: 2.2; }
+  .swapbtn { position: absolute; top: 8px; right: 52px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--label-2); }
+  .swapbtn::before { content: ""; position: absolute; inset: -6px -2px; }
+  .swapbtn .icon { width: 22px; height: 22px; }
+  .card.ex .ex-name { padding-right: 88px; }
   .card.warm .undo { top: 14px; bottom: auto; }
   .card.warm .undo::before { inset: -14px -14px -10px -12px; }
   .card.warm .ex-name { padding-right: 104px; }
@@ -168,6 +172,24 @@
     background: var(--fill-3); color: var(--label); font: 17px var(--font); -webkit-appearance: none; appearance: none;
   }
   input[type=date]::-webkit-date-and-time-value { text-align: right; }
+
+  /* movement library: focus picker + rows */
+  .picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 8px 8px 8px 16px; border-radius: 26px; background: var(--card); font-size: 17px; }
+  .picker select {
+    -webkit-appearance: none; appearance: none; min-height: 40px; max-width: 70%; padding: 8px 34px 8px 16px; border: 0; border-radius: 999px;
+    background: var(--fill-3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2330d158' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 9 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
+    color: var(--green); font: 600 17px var(--font);
+  }
+  .row.lib { align-items: flex-start; }
+  .lib-main { flex: 1; min-width: 0; }
+  .lib-main b { display: block; font-weight: 600; }
+  .lib-rx { display: block; margin-top: 2px; font: 600 16px/1.3 var(--font-round); color: var(--green); }
+  .lib-cue { display: block; margin-top: 4px; font-size: 15px; line-height: 1.35; color: var(--label); }
+  .lib-eq { display: block; margin-top: 4px; font-size: 13px; color: var(--label-2); }
+  .icon.add { margin-top: 2px; color: var(--green); }
+  .sheet-body .picker { position: sticky; top: 0; z-index: 1; background: var(--card-2); }
+  .sheet-body .group { background: var(--card-2); }
+  .sheet-body .section-h { margin: 22px 16px 8px; }
 
   /* rest day */
   .rest-hero { text-align: center; padding: 24px 0 20px; }
@@ -238,6 +260,7 @@
 <nav class="tabbar" aria-label="Sections">
   <button data-tab="today"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7.5v9M17.5 7.5v9M3.5 10v4M20.5 10v4M6.5 12h11"/></svg><span>Today</span></button>
   <button data-tab="week"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Week</span></button>
+  <button data-tab="library"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="3.5"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg><span>Library</span></button>
   <button data-tab="settings"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="9.5" cy="17" r="2.5"/></svg><span>Settings</span></button>
 </nav>
 <div class="sheet-backdrop" id="sheet" hidden>
@@ -252,6 +275,7 @@
 </div>
 
 <script src="program.js"></script>
+<script src="movements.js"></script>
 <script>
 (function () {
   var P = window.PROGRAM;
@@ -264,7 +288,11 @@
   var DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   var DAY_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   var KEY = "pangFitness.v1";
-  var tab = "today";      // "today" | "week" | "day" | "settings"
+  var M = window.MOVEMENTS && Array.isArray(window.MOVEMENTS.list) ? window.MOVEMENTS : { focuses: [], list: [] };
+  var tab = "today";      // "today" | "week" | "day" | "library" | "settings"
+  var libFocus = "";      // focus filter in the library ("" = all)
+  var picking = null;     // library sheet open to { mode: "add" | "swap", si, i }
+  var confirmReset = -1;  // session waiting for a second tap on "Reset to Program"
   var openDay = 0;        // which weekday the "day" view is showing (Mon = 0)
   var confirmRestart = false;
 
@@ -296,8 +324,19 @@
       startDate: isIso(s.startDate) ? s.startDate : thisWeek,
       order: s.order && s.order.week === thisWeek && Array.isArray(s.order.list) ? s.order : null,   // swaps reset each week
       ticks: s.ticks && s.ticks.date === iso(today()) && s.ticks.done ? s.ticks : null,           // sets reset each day
+      custom: cleanCustom(s.custom),       // sessions you've changed from the library, by session number
       updatedAt: typeof s.updatedAt === "number" ? s.updatedAt : 0,
     };
+  }
+  function cleanCustom(c) {
+    var out = {};
+    if (!c || typeof c !== "object") return out;
+    Object.keys(c).forEach(function (k) {
+      if (!/^\d+$/.test(k) || +k >= P.sessions.length || !Array.isArray(c[k])) return;
+      var list = c[k].filter(function (e) { return e && typeof e.name === "string" && typeof e.sets === "number" && e.sets > 0; });
+      out[k] = list;
+    });
+    return out;
   }
   function readLocal() {
     try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
@@ -354,12 +393,72 @@
   }
   function sets(ex, deload) { return deload ? Math.ceil(ex.sets / 2) : ex.sets; }
 
+  // A session's exercises: your library changes if you've made any, otherwise program.js
+  function exList(si) { return S.custom[si] || P.sessions[si].exercises; }
+  function isCustom(si) { return !!S.custom[si]; }
+
+  // ---------- movement library ----------
+  function focusRest(f) {
+    var hit = M.focuses.filter(function (x) { return x.name === f; })[0];
+    return hit && hit.rest ? hit.rest : "60-90 sec";
+  }
+  function fromLibrary(mv) {
+    var n = parseInt(String(mv.sets), 10);
+    return { name: mv.name, sets: n > 0 ? n : 3, reps: String(mv.reps), rest: focusRest(mv.focus), cue: mv.cue, equipment: mv.equipment, focus: mv.focus };
+  }
+  // today's logged sets follow an exercise when the list changes (removed: drop it; later ones move up)
+  function shiftTicks(si, i, removed) {
+    if (sessionFor(dayIdx(today())) !== si || !S.ticks) return;
+    var d = S.ticks.done, out = {};
+    Object.keys(d).forEach(function (k) {
+      var m = /^ex(\d+)$/.exec(k);
+      if (!m) { out[k] = d[k]; return; }
+      var n = +m[1];
+      if (n === i) return;
+      out["ex" + (removed && n > i ? n - 1 : n)] = d[k];
+    });
+    S.ticks.done = out;
+  }
+  function editSession(si, fn) {
+    var list = exList(si).map(function (e) { return JSON.parse(JSON.stringify(e)); });
+    fn(list);
+    S.custom[si] = list;
+    save();
+  }
+  function pickMovement(idx) {
+    var mv = M.list[idx], p = picking;
+    if (!mv || !p) return;
+    if (p.mode === "swap") {
+      editSession(p.si, function (list) { list[p.i] = fromLibrary(mv); });
+      shiftTicks(p.si, p.i, false);
+    } else {
+      editSession(p.si, function (list) { list.push(fromLibrary(mv)); });
+    }
+    saveLocal();
+    closeHow(); render();
+  }
+  function removeMovement() {
+    var p = picking;
+    if (!p || p.mode !== "swap") return;
+    editSession(p.si, function (list) { list.splice(p.i, 1); });
+    shiftTicks(p.si, p.i, true);
+    saveLocal();
+    closeHow(); render();
+  }
+  function resetSession(si) {
+    if (confirmReset !== si) { confirmReset = si; render(); return; }
+    confirmReset = -1;
+    delete S.custom[si];
+    if (sessionFor(dayIdx(today())) === si) S.ticks = null;
+    save(); render();
+  }
+
   // Sets logged today. ticks.done[id] holds how many sets are done (older saves used true = all done).
   // The warm-up counts as one "set".
   function totalSets(id) {
     if (id === "warmup") return 1;
     var si = sessionFor(dayIdx(today())), m = /^ex(\d+)$/.exec(id);
-    var ex = si >= 0 && m ? P.sessions[si].exercises[+m[1]] : null;
+    var ex = si >= 0 && m ? exList(si)[+m[1]] : null;
     return ex ? sets(ex, cycleInfo().deload) : 1;
   }
   function setsDone(id) {
@@ -395,6 +494,7 @@
     play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>',
     ext: '<path d="M7 17 17 7M9 7h8v8"/>',
     check: '<circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="m7.5 12.5 3 3 6-6.5" stroke="#000"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
   };
   function icon(name, cls) { return '<svg class="icon' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + "</svg>"; }
 
@@ -459,13 +559,20 @@
       return "<li><span>" + esc(nm) + "</span>" + (x.how ? infoBtn("w" + i, nm) : "") + "</li>";
     }).join("") + "</ul>";
     h += card("warmup", '<span class="ex-name">' + esc(P.warmup.title) + "</span>", warmList);
-    s.exercises.forEach(function (ex, i) {
+    exList(si).forEach(function (ex, i) {
       h += card("ex" + i,
         '<span class="ex-name">' + esc(ex.name) + "</span>" +
         '<span class="rx-big">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
         '<span class="rest">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>",
-        ex.how ? infoBtn("s" + si + "e" + i, ex.name) : "");
+        (ex.how || ex.cue ? infoBtn("s" + si + "e" + i, ex.name) : "") +
+        '<button class="swapbtn" data-swap="' + si + ":" + i + '" aria-label="Swap ' + esc(ex.name) + '">' + icon("swap") + "</button>");
     });
+    h += '<button class="btn" data-add="' + si + '">' + icon("plus") + "Add Movement</button>";
+    if (isCustom(si)) {
+      h += '<div class="group" style="margin-top:12px"><button class="row action' + (confirmReset === si ? " danger" : "") + '" data-reset="' + si + '">' +
+        (confirmReset === si ? "Tap again to reset " + esc(P.sessions[si].name) : "Reset " + esc(P.sessions[si].name) + " to Program") + "</button></div>" +
+        '<p class="footnote">' + esc(P.sessions[si].name) + " has your library changes. They stay every week until you reset.</p>";
+    }
     return h;
   }
 
@@ -477,16 +584,18 @@
     if (m) { var w = P.warmup.items[+m[1]]; return w && w.how ? { title: w.name, how: w.how } : null; }
     m = /^s(\d+)e(\d+)$/.exec(key);
     if (m) {
-      var s = P.sessions[+m[1]], ex = s && s.exercises[+m[2]];
-      return ex && ex.how ? { title: ex.name, ex: ex, how: ex.how } : null;
+      var ex = P.sessions[+m[1]] && exList(+m[1])[+m[2]];
+      return ex && (ex.how || ex.cue) ? { title: ex.name, ex: ex, how: ex.how || null } : null;
     }
     return null;
   }
   function openHow(btn) {
     var it = howFor(btn.dataset.how);
     if (!it) return;
-    var hw = it.how, h = "";
+    var hw = it.how || { demo: [it.ex.name.toLowerCase()] }, h = "";
     if (it.ex) h += '<p class="rx">' + sets(it.ex, btn.dataset.dl === "1") + " × " + esc(it.ex.reps) + " · Rest " + esc(it.ex.rest) + "</p>";
+    if (it.ex && it.ex.cue) h += "<h3>Cue</h3><p>" + esc(it.ex.cue) + "</p>";
+    if (it.ex && it.ex.equipment) h += "<h3>Equipment</h3><p>" + esc(it.ex.equipment) + "</p>";
     if (hw.setup) h += "<h3>Set up</h3><p>" + esc(hw.setup) + "</p>";
     if (hw.steps && hw.steps.length) h += "<h3>Do it</h3><ol>" + hw.steps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>";
     if (hw.avoid && hw.avoid.length) h += "<h3>Avoid</h3><ul>" + hw.avoid.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
@@ -496,9 +605,12 @@
           '" target="_blank" rel="noopener noreferrer">' + icon("play") + "<span>" + esc(q.charAt(0).toUpperCase() + q.slice(1)) + "</span>" + icon("ext", "ext") + "</a>";
       }).join("") + '</div><p class="small">Opens a YouTube search.</p>';
     }
-    document.getElementById("sheet-title").textContent = it.title;
-    document.getElementById("sheet-body").innerHTML = h;
-    sheetOpener = btn.dataset.how;
+    showSheet(it.title, h, '[data-how="' + btn.dataset.how + '"]');
+  }
+  function showSheet(title, body, opener) {
+    document.getElementById("sheet-title").textContent = title;
+    document.getElementById("sheet-body").innerHTML = body;
+    sheetOpener = opener;
     sheet.hidden = false;
     document.body.classList.add("locked");
     document.getElementById("sheet-body").scrollTop = 0;
@@ -507,9 +619,57 @@
   function closeHow() {
     if (sheet.hidden) return;
     sheet.hidden = true;
+    picking = null;
     document.body.classList.remove("locked");
-    var b = sheetOpener && document.querySelector('[data-how="' + sheetOpener + '"]');
+    var b = sheetOpener && document.querySelector(sheetOpener);
     if (b) b.focus({ preventScroll: true });
+  }
+
+  // ---------- library list (Library tab, and the swap / add sheet) ----------
+  function focusPicker(id) {
+    return '<label class="picker" for="' + id + '"><span>Focus</span><select id="' + id + '" data-focus>' +
+      '<option value="">All</option>' + M.focuses.map(function (f) {
+        return "<option" + (f.name === libFocus ? " selected" : "") + ">" + esc(f.name) + "</option>";
+      }).join("") + "</select></label>";
+  }
+  function libraryRows(pickable) {
+    var h = "";
+    M.focuses.forEach(function (f) {
+      if (libFocus && f.name !== libFocus) return;
+      var items = [];
+      M.list.forEach(function (mv, idx) { if (mv.focus === f.name) items.push(idx); });
+      if (!items.length) return;
+      h += '<h3 class="section-h">' + esc(f.name) + '</h3><div class="group">';
+      items.forEach(function (idx) {
+        var mv = M.list[idx];
+        var inner = '<span class="lib-main"><b>' + esc(mv.name) + '</b><span class="lib-rx">' + esc(mv.sets) + " × " + esc(mv.reps) +
+          '</span><span class="lib-cue">' + esc(mv.cue) + '</span><span class="lib-eq">' + esc(mv.equipment) + "</span></span>";
+        h += pickable
+          ? '<button class="row lib link" data-pick="' + idx + '" aria-label="' + esc((picking && picking.mode === "swap" ? "Swap in " : "Add ") + mv.name) + '">' + inner + icon("plus", "add") + "</button>"
+          : '<div class="row lib">' + inner + "</div>";
+      });
+      h += "</div>";
+    });
+    return h || '<p class="summary">No movements for this focus yet. Add some in movements.js.</p>';
+  }
+  function librarySheetBody() {
+    var p = picking, h = focusPicker("pick-focus");
+    if (p.mode === "swap") {
+      h += '<div class="group" style="margin-top:12px"><button class="row action danger" data-remove>Remove from ' + esc(P.sessions[p.si].name) + "</button></div>";
+    }
+    return h + '<div id="pick-list">' + libraryRows(true) + "</div>";
+  }
+  function openLibrary(mode, si, i) {
+    picking = { mode: mode, si: si, i: i };
+    var title = mode === "swap" ? "Swap " + exList(si)[i].name : "Add to " + P.sessions[si].name + " · " + P.sessions[si].title;
+    showSheet(title, librarySheetBody(), mode === "swap" ? '[data-swap="' + si + ":" + i + '"]' : '[data-add="' + si + '"]');
+  }
+
+  function viewLibrary() {
+    var h = header("", "Library", "", "");
+    h += '<p class="summary">Movements you can swap into a session or add to one. On a day, tap ⇄ on an exercise or + Add Movement.</p>';
+    h += focusPicker("lib-focus") + libraryRows(false);
+    return h;
   }
 
   // ---------- screens ----------
@@ -526,7 +686,7 @@
     }
 
     var s = P.sessions[si];
-    var ids = ["warmup"].concat(s.exercises.map(function (_, i) { return "ex" + i; }));
+    var ids = ["warmup"].concat(exList(si).map(function (_, i) { return "ex" + i; }));
     var doneCount = ids.filter(isDone).length;
 
     var h = header(longDate(t), s.title, s.name, cyclePill(ci));
@@ -616,7 +776,7 @@
 
   function render() {
     var app = document.getElementById("app");
-    app.innerHTML = tab === "week" ? viewWeek() : tab === "day" ? viewDay() : tab === "settings" ? viewSettings() : viewToday();
+    app.innerHTML = tab === "week" ? viewWeek() : tab === "day" ? viewDay() : tab === "settings" ? viewSettings() : tab === "library" ? viewLibrary() : viewToday();
     var navTab = tab === "day" ? "week" : tab;          // a day's workout lives under Week
     document.querySelectorAll("nav button").forEach(function (b) {
       var on = b.dataset.tab === navTab;
@@ -626,7 +786,7 @@
     keepAwake(tab === "today" && sessionFor(dayIdx(today())) >= 0);
   }
 
-  function go(t) { tab = t; confirmRestart = false; window.scrollTo(0, 0); render(); }
+  function go(t) { tab = t; confirmRestart = false; confirmReset = -1; window.scrollTo(0, 0); render(); }
 
   // After a redraw, put keyboard focus back on the control that was used
   function refocus(sel, fallback) {
@@ -644,8 +804,11 @@
 
   document.addEventListener("click", function (e) {
     if (!sheet.hidden) {
-      // sheet open: only its close button, the dimmed area around it, and its demo links do anything
-      if (e.target === sheet || e.target.closest("#sheet-close")) closeHow();
+      // sheet open: only its own controls, the dimmed area around it, and its links do anything
+      if (e.target === sheet || e.target.closest("#sheet-close")) { closeHow(); return; }
+      var pk = e.target.closest("[data-pick]");
+      if (pk) { pickMovement(+pk.dataset.pick); return; }
+      if (e.target.closest("[data-remove]")) { removeMovement(); return; }
       return;
     }
     var el = e.target.closest("button, [data-tick]");
@@ -669,6 +832,9 @@
       go(openDay === dayIdx(today()) ? "today" : "day");
       return;
     }
+    if (el.dataset.swap) { var sp = el.dataset.swap.split(":"); openLibrary("swap", +sp[0], +sp[1]); return; }
+    if (el.dataset.add) { openLibrary("add", +el.dataset.add); return; }
+    if (el.dataset.reset) { resetSession(+el.dataset.reset); return; }
     if (el.dataset.tick) { logSet(el.dataset.tick); return; }
     if (el.dataset.undo) { undoSet(el.dataset.undo); return; }
     if (el.id === "swap") { swapToday(); return; }
@@ -693,7 +859,7 @@
     if (!sheet.hidden) {
       if (e.key === "Escape") { e.preventDefault(); closeHow(); return; }
       if (e.key === "Tab") {
-        var f = sheet.querySelectorAll("button, a[href]");
+        var f = sheet.querySelectorAll("button, a[href], select");
         var first = f[0], last = f[f.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -711,6 +877,12 @@
   });
 
   document.addEventListener("change", function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute("data-focus")) {
+      libFocus = e.target.value;
+      if (picking) document.getElementById("pick-list").innerHTML = libraryRows(true);   // sheet stays open on the day
+      else render();
+      return;
+    }
     if (e.target.id === "start" && isIso(e.target.value)) { S.startDate = e.target.value; save(); render(); }
   });
 
