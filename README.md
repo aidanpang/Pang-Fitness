@@ -7,6 +7,8 @@ A tiny iPhone web app for sticking to a 3-day-a-week weights program around surf
 - **How to do it** – every exercise (and each warm-up move) has a button that shows how to set up, the steps, the common mistakes to avoid, and a link to a YouTube demo.
 - **Swap** – shoulders cooked? Tap *Swap session* to switch today's session. The rest of the week re-shuffles so you still get all three sessions in.
 - **Week** – the 7 days at a glance. Tap any lift day to see that workout (sets × reps, rest). Tapping today's lift day takes you to Today, where you tick things off.
+- **Library** – 30 extra movements grouped by focus (Power, Paddle & Pull, Legs & Balance, Rotation & Core, Shoulder Health, Conditioning), each with sets × reps, a coaching cue and equipment. Pick a focus at the top to filter.
+- **Swap or add** – on a day, tap ⇄ on an exercise to swap it for a library movement (or remove it), or tap **+ Add Movement**. The library slides up over the day. Changes stick to that session every week until you tap **Reset to Program**; `program.js` itself is never changed.
 - **Settings** – pick your 3 lift days, and set/reset the start date of your 5-week cycle.
 - **5-week cycle** – shows "Week X of 5". Week 5 is the deload: sets are automatically halved.
 - **How to run it** – the rules are shown under every session.
@@ -18,6 +20,7 @@ Everything is saved on your phone only (in the browser). No accounts, no server.
 | File | What it is |
 |---|---|
 | `program.js` | **Your program.** Exercises, warm-up, rules. This is the one to edit. |
+| `movements.js` | **The movement library.** Add or change movements here (same rules as `program.js`). |
 | `index.html` | The app itself. You shouldn't need to touch it. |
 | `manifest.json`, `icon.png` | Home-screen name and icon. |
 
