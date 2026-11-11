@@ -7,204 +7,245 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Lift">
-<meta name="theme-color" content="#0b0d10">
-<link rel="apple-touch-icon" href="icon.png?v=2">
-<link rel="icon" href="icon.png?v=2">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<link rel="apple-touch-icon" href="icon.png?v=3">
+<link rel="icon" href="icon.png?v=3">
 <link rel="manifest" href="manifest.json">
 <title>Pang Fitness</title>
 <style>
-  /* Layout: one column of big tap-cards over a fixed bottom tab bar, readable from across a garage gym.
-     Deliberately single-theme (dark), as the owner asked. */
-  [hidden] { display: none !important; }
+  /* Looks like an iPhone app on iOS 26, dark appearance (the owner asked for dark mode).
+     Colours are Apple's system colours for dark mode; text uses the iPhone's own font (San Francisco),
+     with the rounded version for workout numbers, like Apple's Fitness app.
+     Layout: large title at the top of each screen, rounded cards and grouped lists,
+     a floating glass tab bar, and a slide-up sheet for "How to do it". */
   :root {
     color-scheme: dark;
-    --bg: #0b0d10;
-    --card: #161a20;
-    --card2: #1f252d;
-    --line: #2a313b;
-    --text: #f2f4f7;
-    --dim: #9aa4b2;
-    --accent: #3ddc97;
-    --accent-ink: #062b1c;
-    --warn: #ffb648;
-    --warn-ink: #2b1a00;
-    --nav-bg: rgba(11, 13, 16, 0.94);
-    --scrim: rgba(0, 0, 0, 0.62);
-    --accent-soft: rgba(61, 220, 151, 0.35);
-    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
+    --bg: #000000;                          /* systemBackground */
+    --card: #1c1c1e;                        /* secondarySystemGroupedBackground */
+    --card-2: #2c2c2e;                      /* tertiarySystemGroupedBackground */
+    --label: #ffffff;                       /* label */
+    --label-2: rgba(235, 235, 245, 0.6);    /* secondaryLabel */
+    --label-3: rgba(235, 235, 245, 0.3);    /* tertiaryLabel */
+    --separator: rgba(84, 84, 88, 0.65);    /* separator */
+    --fill-3: rgba(118, 118, 128, 0.24);    /* tertiarySystemFill */
+    --fill-4: rgba(118, 118, 128, 0.18);    /* quaternarySystemFill */
+    --green: #30d158;                       /* systemGreen */
+    --green-tint: rgba(48, 209, 88, 0.18);
+    --orange: #ff9f0a;                      /* systemOrange */
+    --orange-tint: rgba(255, 159, 10, 0.18);
+    --red: #ff453a;                         /* systemRed */
+    --on-green: #000000;
+    --glass: rgba(40, 40, 44, 0.62);        /* Liquid Glass-style bars */
+    --glass-edge: rgba(255, 255, 255, 0.14);
+    --scrim: rgba(0, 0, 0, 0.55);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, "Helvetica Neue", sans-serif;
+    --font-round: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html { background: var(--bg); }
+  [hidden] { display: none !important; }
+  html { background: var(--bg); touch-action: manipulation; -webkit-text-size-adjust: 100%; }
   body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 18px/1.35 var(--font);
-    padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px);
+    margin: 0; background: var(--bg); color: var(--label);
+    font: 17px/1.3 var(--font);
+    -webkit-font-smoothing: antialiased;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
   main { max-width: 640px; margin: 0 auto; }
-  button { font: inherit; color: inherit; border: 0; cursor: pointer; background: none; }
-  button:focus-visible, [role="button"]:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  h1 { font-size: 40px; line-height: 1.05; margin: 4px 0 6px; letter-spacing: -0.5px; text-wrap: balance; }
-  h2 { font-size: 22px; margin: 28px 0 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
-  .muted { color: var(--dim); }
+  button { font: inherit; color: inherit; border: 0; background: none; padding: 0; margin: 0; cursor: pointer; text-align: inherit; }
+  button:focus-visible, [role="button"]:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .icon { display: block; flex: none; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .icon.ok { width: 22px; height: 22px; color: var(--green); }
+  .icon.ok path { stroke-width: 2.4; }
+  .muted { color: var(--label-2); }
 
-  .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--dim); font-size: 17px; }
-  .pill { display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--card2); font-weight: 600; color: var(--text); white-space: nowrap; }
-  .pill.deload { background: var(--warn); color: var(--warn-ink); }
-
-  .banner { background: var(--warn); color: var(--warn-ink); border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 20px; margin: 12px 0; }
-  .banner.good { background: var(--accent); color: var(--accent-ink); }
-
-  .big-btn {
-    display: block; width: 100%; padding: 18px; border-radius: 16px;
-    background: var(--card2); color: var(--text); font-size: 20px; font-weight: 700; margin-top: 12px;
+  /* ---------- screen header: date, large title, subtitle ---------- */
+  .head { margin: 6px 0 16px; }
+  .eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 32px; }
+  .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--label-2); }
+  h1 { font-size: 34px; line-height: 1.12; font-weight: 700; letter-spacing: 0.2px; margin: 4px 0 0; text-wrap: balance; }
+  .subtitle { font-size: 22px; line-height: 1.25; color: var(--label-2); margin: 2px 0 0; }
+  .summary { font-size: 15px; line-height: 1.35; color: var(--label-2); margin: -6px 0 16px; font-variant-numeric: tabular-nums; }
+  .summary b { color: var(--label); font-weight: 600; }
+  .back { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; margin-left: -8px; padding: 0 8px 0 2px; color: var(--green); font-size: 17px; }
+  .back .icon { width: 26px; height: 26px; stroke-width: 2.4; }
+  .capsule {
+    display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px;
+    background: var(--green-tint); color: var(--green); font: 600 15px/1 var(--font-round); white-space: nowrap;
   }
-  .big-btn.primary { background: var(--accent); color: var(--accent-ink); }
-  .big-btn.danger { background: var(--warn); color: var(--warn-ink); }
+  .capsule.deload { background: var(--orange-tint); color: var(--orange); }
+  .capsule.plain { background: var(--fill-3); color: var(--label-2); }
 
-  .card {
-    width: 100%; text-align: left;
-    background: var(--card); border: 2px solid var(--line); border-radius: 18px;
-    padding: 16px; margin: 10px 0;
+  /* ---------- workout cards ---------- */
+  .card { position: relative; background: var(--card); border-radius: 26px; margin: 0 0 12px; }
+  .card.tickable { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .tick { display: block; padding: 18px; border-radius: 26px; }
+  .card.tickable .tick:active { background: var(--fill-4); }
+  .ex-name { display: block; font-size: 22px; line-height: 1.2; font-weight: 600; padding-right: 40px; }
+  .rx-big { display: block; font: 700 44px/1.1 var(--font-round); margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .rest { display: block; font-size: 17px; color: var(--label-2); margin-top: 2px; }
+  .sets { display: block; margin-top: 16px; }
+  .bar { display: flex; gap: 4px; }
+  .seg { flex: 1; height: 10px; border-radius: 5px; background: var(--fill-3); }
+  .seg.on { background: var(--green); }
+  .seg.now { background: var(--green-tint); box-shadow: inset 0 0 0 1.5px var(--green); }
+  .sets-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; margin-top: 10px; min-height: 36px; padding-right: 100px; }
+  .sets-label { display: inline-flex; align-items: center; gap: 6px; font: 600 22px/1.2 var(--font-round); color: var(--green); font-variant-numeric: tabular-nums; }
+  .hint { font-size: 15px; color: var(--label-2); }
+  .card.done .ex-name, .card.done .rx-big { color: var(--label-2); }
+
+  /* round buttons on a card: "How to do it" (top right) and "Undo" (bottom right) */
+  .info { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--green); }
+  .info::before { content: ""; position: absolute; inset: -6px; }
+  .info .icon { width: 26px; height: 26px; stroke-width: 1.8; }
+  .undo {
+    position: absolute; right: 14px; bottom: 14px; height: 36px; padding: 0 14px 0 11px;
+    display: inline-flex; align-items: center; gap: 5px; border-radius: 999px;
+    background: var(--fill-3); color: var(--label); font-size: 15px; font-weight: 600;
   }
-  .card:not(.preview) { cursor: pointer; user-select: none; -webkit-user-select: none; }
-  .tick { display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; -webkit-user-select: none; border-radius: 12px; }
-  .card.preview .tick { cursor: default; }
-  .how-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 -16px -16px; padding: 12px 16px 16px; }
-  .how-label { font-size: 16px; color: var(--dim); }
-  .how {
-    min-height: 44px; padding: 8px 14px; border-radius: 999px;
-    border: 2px solid var(--line); color: var(--text); font-size: 17px; font-weight: 700;
+  .undo::before { content: ""; position: absolute; inset: -12px -14px -14px -12px; }
+  .undo .icon { width: 17px; height: 17px; stroke-width: 2.2; }
+  .card.warm .undo { top: 14px; bottom: auto; }
+  .card.warm .undo::before { inset: -14px -14px -10px -12px; }
+  .card.warm .ex-name { padding-right: 104px; }
+  .card.warm .sets-line { padding-right: 0; margin-top: 6px; }
+  .card.warm .tick { padding-bottom: 12px; }
+
+  /* warm-up moves: a list with an info button on each row */
+  .list { list-style: none; margin: 0; padding: 0 6px 6px 18px; }
+  .list li { display: flex; align-items: center; gap: 8px; min-height: 52px; border-top: 0.5px solid var(--separator); font-size: 17px; }
+  .list li > span { flex: 1; min-width: 0; padding: 12px 0; }
+  .list .info { position: relative; top: auto; right: auto; }
+  .list .info::before { inset: -3px -6px; }
+  .card.done .list li > span { color: var(--label-2); }
+
+  /* ---------- callouts and buttons ---------- */
+  .callout { display: flex; align-items: flex-start; gap: 12px; border-radius: 22px; padding: 14px 16px; margin: 0 0 12px; font-size: 17px; line-height: 1.3; }
+  .callout b { display: block; font-weight: 600; }
+  .callout.orange { background: var(--orange-tint); }
+  .callout.orange b { color: var(--orange); }
+  .callout.green { background: var(--green-tint); }
+  .callout.green b { color: var(--green); }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px;
+    padding: 14px 20px; margin-top: 8px; border-radius: 999px; background: var(--fill-3); color: var(--label);
+    font-size: 17px; font-weight: 600;
   }
-  .how .i { color: var(--accent); }
-  .card .check {
-    flex: 0 0 44px; height: 44px; border-radius: 50%; border: 3px solid var(--line);
-    display: grid; place-items: center; font-size: 26px; font-weight: 900; color: transparent;
-  }
-  .card .body { flex: 1; min-width: 0; }
-  .card .name { display: block; font-size: 24px; font-weight: 700; line-height: 1.15; }
-  .card .sr { display: block; font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
-  .card .meta { display: block; font-size: 18px; color: var(--dim); margin-top: 2px; }
-  .card.partial { border-color: var(--accent-soft); }
-  .card.partial .check { border-color: var(--accent); }
-  .sets { display: block; margin-top: 10px; }
-  .sets-label { display: block; font-size: 20px; font-weight: 800; color: var(--accent); }
-  .bar { display: flex; gap: 6px; margin-top: 6px; }
-  .seg { flex: 1; height: 14px; border-radius: 7px; background: var(--card2); border: 2px solid var(--line); }
-  .seg.on { background: var(--accent); border-color: var(--accent); }
-  .seg.now { border-color: var(--accent); }
-  .how.undo { color: var(--dim); }
-  .card.done { border-color: var(--accent); }
-  .card.done .tick { opacity: 0.55; }
-  .card.done .check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .card.done .name { text-decoration: line-through; }
-  .card.preview { cursor: default; }
-  .card.preview .check { display: none; }
-  .warm li { font-size: 20px; margin: 4px 0; }
-  .warm ul { margin: 6px 0 0; padding-left: 22px; }
+  .btn .icon { width: 20px; height: 20px; }
+  .btn:active, .row.link:active, .row.action:active { background: var(--fill-3); }
+  .footnote { font-size: 13px; line-height: 1.38; color: var(--label-2); margin: 8px 16px 0; }
 
-  .rest-day { text-align: center; padding: 40px 0 10px; }
-  .rest-day .emoji { font-size: 72px; }
+  /* ---------- grouped lists (like the Settings app) ---------- */
+  .section-h { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--label-2); margin: 30px 16px 8px; }
+  .group { background: var(--card); border-radius: 26px; overflow: hidden; list-style: none; margin: 0; padding: 0; }
+  .row { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 12px 16px; font-size: 17px; line-height: 1.3; text-align: left; }
+  .group > .row + .row::before { content: ""; position: absolute; top: 0; left: 16px; right: 0; border-top: 0.5px solid var(--separator); }
+  .row .value { margin-left: auto; color: var(--label-2); text-align: right; font-variant-numeric: tabular-nums; }
+  .row.action { color: var(--green); }
+  .row.action.danger { color: var(--red); }
+  .chev { width: 15px; height: 15px; margin-left: auto; color: var(--label-3); stroke-width: 2.8; }
+  .row.day { min-height: 64px; }
+  .day-col { flex: 0 0 46px; }
+  .day-col b { display: block; font-weight: 600; }
+  .day-col small { display: block; font-size: 13px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .row.today .day-col b { color: var(--green); }
+  .sess { flex: 1; min-width: 0; }
+  .sess b { display: block; font-weight: 600; }
+  .sess span { display: block; font-size: 15px; color: var(--label-2); }
+  .sess .tag { color: var(--orange); font-size: 13px; font-weight: 600; }
+  .row.rest .sess { color: var(--label-3); }
+  .row .chev + .capsule, .row .capsule + .chev { margin-left: 0; }
 
-  .week-row {
-    display: flex; align-items: center; gap: 14px; background: var(--card);
-    border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; margin: 8px 0;
-  }
-  button.week-row { width: 100%; text-align: left; }
-  .week-row.today { border-color: var(--accent); }
-  .week-row .d { width: 64px; flex: 0 0 64px; font-size: 22px; font-weight: 800; }
-  .week-row .s { flex: 1; min-width: 0; font-size: 20px; }
-  .week-row .s b { display: block; }
-  .week-row .s .tag { display: block; font-size: 16px; color: var(--warn); font-weight: 700; }
-  .week-row.off .s { color: var(--dim); }
-  .week-row .go { font-size: 34px; color: var(--dim); line-height: 1; }
-  .back { background: var(--card2); color: var(--text); padding: 10px 16px; border-radius: 999px; font-size: 18px; font-weight: 700; }
-
-  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .day-btn { padding: 18px 0; border-radius: 14px; background: var(--card2); color: var(--text); font-size: 17px; font-weight: 700; min-width: 0; }
-  .day-btn.on { background: var(--accent); color: var(--accent-ink); }
-
+  /* settings: lift-day picker and the start date */
+  .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; padding: 12px; }
+  .day-btn { min-height: 52px; min-width: 0; border-radius: 14px; background: var(--fill-3); color: var(--label); font-size: 15px; font-weight: 600; text-align: center; }
+  .day-btn.on { background: var(--green); color: var(--on-green); }
   input[type=date] {
-    width: 100%; font: inherit; font-size: 20px; padding: 14px; border-radius: 14px;
-    background: var(--card2); color: var(--text); border: 2px solid var(--line);
-    -webkit-appearance: none; appearance: none; min-height: 56px;
+    margin-left: auto; min-height: 36px; padding: 6px 12px; border: 0; border-radius: 10px;
+    background: var(--fill-3); color: var(--label); font: 17px var(--font); -webkit-appearance: none; appearance: none;
   }
-  .note { background: var(--card); border-radius: 16px; padding: 6px 18px; border: 2px solid var(--line); }
-  .note li { margin: 10px 0; font-size: 19px; }
-  .note ul { padding-left: 20px; }
-  .sync { font-size: 16px; margin-top: 28px; }
-  .sync.on { color: var(--accent); }
+  input[type=date]::-webkit-date-and-time-value { text-align: right; }
 
-  nav {
-    position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; z-index: 5;
-    padding-top: 10px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
-    padding-left: max(12px, env(safe-area-inset-left, 0px));
-    padding-right: max(12px, env(safe-area-inset-right, 0px));
-    background: var(--nav-bg); border-top: 1px solid var(--line);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  /* rest day */
+  .rest-hero { text-align: center; padding: 24px 0 20px; }
+  .rest-hero .wave { font-size: 64px; line-height: 1; }
+  .rest-hero h1 { margin-top: 12px; }
+
+  /* ---------- floating glass tab bar ---------- */
+  .tabbar {
+    position: fixed; z-index: 10; left: 50%; transform: translateX(-50%);
+    bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) - 12px));
+    width: min(420px, calc(100% - 2 * max(16px, env(safe-area-inset-left, 0px))));
+    display: flex; gap: 4px; padding: 4px; border-radius: 999px;
+    background: var(--glass); border: 0.5px solid var(--glass-edge);
+    -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   }
-  nav button { flex: 1; padding: 14px 0; border-radius: 14px; font-size: 18px; font-weight: 700; color: var(--dim); }
-  nav button.active { background: var(--card2); color: var(--text); }
+  .tabbar button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 54px; border-radius: 999px; color: var(--label); font-size: 11px; font-weight: 600;
+  }
+  .tabbar button.active { background: var(--fill-3); color: var(--green); }
 
-  /* "How to do it" panel: slides up from the bottom over everything */
+  /* ---------- "How to do it" sheet ---------- */
   body.locked { overflow: hidden; }
-  .sheet-backdrop {
-    position: fixed; inset: 0; z-index: 20; background: var(--scrim);
-    display: flex; align-items: flex-end; justify-content: center;
-  }
+  .sheet-backdrop { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
   .sheet-backdrop[hidden] { display: none; }
   .sheet {
-    width: 100%; max-width: 640px; max-height: 90%; display: flex; flex-direction: column;
-    background: var(--card); border: 2px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    width: 100%; max-width: 640px; max-height: calc(100% - env(safe-area-inset-top, 0px) - 12px);
+    display: flex; flex-direction: column; background: var(--card); border-radius: 34px 34px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
   }
+  .grabber { flex: none; width: 36px; height: 5px; border-radius: 3px; background: var(--label-3); margin: 6px auto 0; }
   .sheet-head {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-    padding-block: 18px 6px;
-    padding-left: max(20px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; align-items: flex-start; gap: 12px; padding-block: 10px 6px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px));
   }
-  .sheet-head h2 { margin: 6px 0 0; color: var(--text); text-transform: none; letter-spacing: -0.3px; font-size: 28px; line-height: 1.15; }
-  .sheet-close { flex: 0 0 48px; height: 48px; border-radius: 50%; background: var(--card2); color: var(--text); font-size: 22px; font-weight: 700; }
+  .sheet-head h2 { flex: 1; min-width: 0; margin: 6px 0 0; font-size: 24px; line-height: 1.2; font-weight: 700; }
+  .sheet-close { flex: 0 0 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--fill-3); color: var(--label-2); }
+  .sheet-close .icon { width: 16px; height: 16px; stroke-width: 2.8; }
   .sheet-body {
     overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
-    padding-block: 0 28px;
-    padding-left: max(20px, env(safe-area-inset-left, 0px));
-    padding-right: max(20px, env(safe-area-inset-right, 0px));
-    font-size: 20px; line-height: 1.4;
+    padding-block: 0 28px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+    font-size: 18px; line-height: 1.4;
   }
-  .sheet-body .rx { font-size: 24px; font-weight: 800; margin: 2px 0 0; }
-  .sheet-body h3 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin: 22px 0 6px; }
+  .sheet-body .rx { font: 600 20px/1.3 var(--font-round); color: var(--green); margin: 0; }
+  .sheet-body h3 { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; color: var(--label-2); margin: 24px 0 8px; }
   .sheet-body p { margin: 0; }
-  .sheet-body ol, .sheet-body ul { margin: 0; padding-left: 26px; }
+  .sheet-body ol, .sheet-body ul { margin: 0; padding-left: 24px; }
   .sheet-body li { margin: 8px 0; }
-  .sheet-body .demo { display: flex; flex-wrap: wrap; gap: 8px; }
-  .sheet-body .demo a {
-    display: inline-flex; align-items: center; min-height: 48px; padding: 10px 16px; border-radius: 999px;
-    background: var(--card2); color: var(--accent); font-weight: 700; text-decoration: none;
-  }
-  .sheet-body .small { font-size: 15px; margin-top: 8px; }
+  .sheet-body ol li::marker { color: var(--green); font-weight: 600; }
+  .sheet-body .demo { background: var(--card-2); border-radius: 18px; overflow: hidden; }
+  .sheet-body .demo a { position: relative; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; color: var(--green); font-weight: 600; text-decoration: none; }
+  .sheet-body .demo a + a::before { content: ""; position: absolute; top: 0; left: 52px; right: 0; border-top: 0.5px solid var(--separator); }
+  .sheet-body .demo .icon { width: 20px; height: 20px; }
+  .sheet-body .demo .ext { margin-left: auto; color: var(--label-3); width: 16px; height: 16px; }
+  .sheet-body .small { font-size: 13px; color: var(--label-2); margin-top: 8px; }
+
   @media (prefers-reduced-motion: no-preference) {
-    .sheet-backdrop:not([hidden]) .sheet { animation: rise 0.2s ease-out; }
-    @keyframes rise { from { transform: translateY(40px); } to { transform: none; } }
+    .card.tickable { transition: transform 0.15s ease; }
+    .card.tickable:has(.tick:active) { transform: scale(0.985); }
+    .sheet-backdrop:not([hidden]) .sheet { animation: rise 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+    @keyframes rise { from { transform: translateY(60px); } to { transform: none; } }
   }
 </style>
 </head>
 <body>
 <main id="app"></main>
-<nav aria-label="Sections">
-  <button data-tab="today">Today</button>
-  <button data-tab="week">Week</button>
-  <button data-tab="settings">Settings</button>
+<nav class="tabbar" aria-label="Sections">
+  <button data-tab="today"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7.5v9M17.5 7.5v9M3.5 10v4M20.5 10v4M6.5 12h11"/></svg><span>Today</span></button>
+  <button data-tab="week"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Week</span></button>
+  <button data-tab="settings"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.5"/><circle cx="9.5" cy="17" r="2.5"/></svg><span>Settings</span></button>
 </nav>
 <div class="sheet-backdrop" id="sheet" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="grabber" aria-hidden="true"></div>
     <div class="sheet-head">
       <h2 id="sheet-title"></h2>
-      <button class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
+      <button class="sheet-close" id="sheet-close" aria-label="Close"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="sheet-body" id="sheet-body"></div>
   </div>
@@ -216,7 +257,7 @@
   var P = window.PROGRAM;
   if (!P || !Array.isArray(P.sessions) || !P.warmup) {
     document.getElementById("app").innerHTML =
-      '<h1>Couldn\'t read your program</h1><p class="muted" style="font-size:20px">There\'s probably a missing comma, quote or bracket in <b style="color:var(--text)">program.js</b>. ' +
+      '<header class="head"><h1>Couldn\'t read your program</h1></header><p class="summary" style="font-size:17px">There\'s probably a missing comma, quote or bracket in <b>program.js</b>. ' +
       "Undo your last change to that file on GitHub (or fix the typo) and this page will work again.</p>";
     return;
   }
@@ -239,6 +280,7 @@
   function parseIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
   function nice(d) { return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }); }
+  function longDate(d) { return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" }); }
 
   // ---------- saved data ----------
   // One small record: lift days, cycle start, this week's swap order, today's sets.
@@ -253,7 +295,7 @@
       liftDays: days,
       startDate: isIso(s.startDate) ? s.startDate : thisWeek,
       order: s.order && s.order.week === thisWeek && Array.isArray(s.order.list) ? s.order : null,   // swaps reset each week
-      ticks: s.ticks && s.ticks.date === iso(today()) && s.ticks.done ? s.ticks : null,           // ticks reset each day
+      ticks: s.ticks && s.ticks.date === iso(today()) && s.ticks.done ? s.ticks : null,           // sets reset each day
       updatedAt: typeof s.updatedAt === "number" ? s.updatedAt : 0,
     };
   }
@@ -308,7 +350,7 @@
     }
     S.order = { week: iso(mondayOf(today())), list: list };
     S.ticks = null;
-    save(["order", "ticks"]); render();
+    save(); render();
   }
   function sets(ex, deload) { return deload ? Math.ceil(ex.sets / 2) : ex.sets; }
 
@@ -332,75 +374,102 @@
     if (c >= totalSets(id)) { render(); return; }          // finished (or the day changed under us): just redraw
     if (!S.ticks || S.ticks.date !== iso(today())) S.ticks = { date: iso(today()), done: {} };
     S.ticks.done[id] = c + 1;
-    save(["ticks"]); render();
+    save(); render();
   }
-  function undoSet(id) {                      // "Undo set": take one set back off
+  function undoSet(id) {                      // "Undo": take one set back off
     var c = setsDone(id);
     if (c <= 0 || !S.ticks) { render(); return; }
     if (c > 1) S.ticks.done[id] = c - 1; else delete S.ticks.done[id];
-    save(["ticks"]); render();
+    save(); render();
   }
 
-  // ---------- views ----------
+  // ---------- building blocks for the screens ----------
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
+  var ICONS = {
+    info: '<circle cx="12" cy="12" r="9.25"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="0.7" fill="currentColor"/>',
+    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    swap: '<path d="M7 4 3 8l4 4"/><path d="M3 8h14"/><path d="m17 12 4 4-4 4"/><path d="M21 16H7"/>',
+    chevR: '<path d="m9 5 7 7-7 7"/>',
+    chevL: '<path d="m15 5-7 7 7 7"/>',
+    play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>',
+    ext: '<path d="M7 17 17 7M9 7h8v8"/>',
+    check: '<circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/><path d="m7.5 12.5 3 3 6-6.5" stroke="#000"/>',
+  };
+  function icon(name, cls) { return '<svg class="icon' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONS[name] + "</svg>"; }
+
+  // Screen header: small date line (with the cycle capsule), large title, subtitle
+  function header(eyebrow, title, subtitle, right, back) {
+    var h = '<header class="head">';
+    if (back) h += '<button class="back" data-goto="week">' + icon("chevL") + "Week</button>";
+    if (eyebrow || right) h += '<div class="eyebrow-row"><span class="eyebrow">' + esc(eyebrow || "") + "</span>" + (right || "") + "</div>";
+    if (title) h += "<h1>" + esc(title) + "</h1>";
+    if (subtitle) h += '<p class="subtitle">' + esc(subtitle) + "</p>";
+    return h + "</header>";
+  }
+
   function cyclePill(ci) {
-    if (ci.notStarted) return '<span class="pill">Starts ' + esc(nice(parseIso(S.startDate))) + "</span>";
-    return '<span class="pill' + (ci.deload ? " deload" : "") + '">Week ' + ci.week + " of " + ci.of + (ci.deload ? " · Deload" : "") + "</span>";
+    if (ci.notStarted) return '<span class="capsule plain" id="cycle-pill">Starts ' + esc(nice(parseIso(S.startDate))) + "</span>";
+    return '<span class="capsule' + (ci.deload ? " deload" : "") + '" id="cycle-pill">Week ' + ci.week + " of " + ci.of + (ci.deload ? " · Deload" : "") + "</span>";
   }
 
   function rulesNote() {
-    return '<h2>How to run it</h2><div class="note"><ul>' +
-      P.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul></div>";
+    return '<h2 class="section-h">How to run it</h2><ul class="group">' +
+      P.rules.map(function (r) { return '<li class="row">' + esc(r) + "</li>"; }).join("") + "</ul>";
   }
 
-  // "Set 2 of 4" plus one bar segment per set: filled = done, outlined = the set you're on now
-  function setBar(c, total) {
+  // Bar with one segment per set (filled = done, outlined = the set you're on) and "Set 2 of 4"
+  function setProgress(c, total, warm) {
+    if (warm) {
+      return '<span class="sets-line">' + (c >= total
+        ? '<span class="sets-label">' + icon("check", "ok") + "Done</span>"
+        : '<span class="hint">Tap when done</span>') + "</span>";
+    }
     var segs = "";
     for (var k = 0; k < total; k++) segs += '<span class="seg' + (k < c ? " on" : k === c ? " now" : "") + '"></span>';
-    var label = c >= total ? "All " + total + " sets done ✓" : "Set " + (c + 1) + " of " + total;
-    return '<span class="sets"><span class="sets-label">' + label + "</span>" +
-      '<span class="bar" aria-hidden="true">' + segs + "</span></span>";
+    var line = c >= total
+      ? '<span class="sets-label">' + icon("check", "ok") + "All " + total + " sets done</span>"
+      : '<span class="sets-label">Set ' + (c + 1) + " of " + total + '</span><span class="hint">Tap when done</span>';
+    return '<span class="sets"><span class="bar" aria-hidden="true">' + segs + '</span><span class="sets-line">' + line + "</span></span>";
   }
 
   // Warm-up + exercise cards. tickable = Today (each tap on a card logs one set); otherwise a read-only preview.
-  // Each card has a separate "How to do it" button below the tap area, so opening it never ticks.
+  // The ⓘ and Undo buttons sit outside the tap area, so they never log a set.
   function sessionCards(s, deload, tickable) {
     var si = P.sessions.indexOf(s), dl = deload ? "1" : "0";
     var h = "";
-    if (deload) h += '<div class="banner">Deload week: half the sets (already halved below)</div>';
-    function card(id, inner, howRow) {
+    if (deload) h += '<div class="callout orange"><span><b>Deload week</b>Sets are halved below.</span></div>';
+    function card(id, inner, extra) {
+      var warm = id === "warmup";
       var total = tickable ? totalSets(id) : 0, c = tickable ? setsDone(id) : 0, done = tickable && c >= total;
-      var cls = "card" + (done ? " done" : c > 0 ? " partial" : "") + (tickable ? "" : " preview") + (id === "warmup" ? " warm" : "");
+      var cls = "card" + (warm ? " warm" : " ex") + (tickable ? " tickable" : " preview") + (done ? " done" : c > 0 ? " partial" : "");
       var tick = tickable
-        ? '<div role="button" tabindex="0"' + (id === "warmup" ? ' aria-pressed="' + done + '"' : "") + ' class="tick" data-tick="' + id + '">'
+        ? '<div role="button" tabindex="0"' + (warm ? ' aria-pressed="' + done + '"' : "") + ' class="tick" data-tick="' + id + '">'
         : '<div class="tick">';
-      var mark = done ? "✓" : "";
-      var undo = tickable && c > 0 ? '<button class="how undo" data-undo="' + id + '"><span aria-hidden="true">↶</span> Undo' + (id === "warmup" ? "" : " set") + "</button>" : "";
-      var row = (howRow || "") + undo;
-      return '<div class="' + cls + '">' + tick +
-        '<span class="check" aria-hidden="true">' + mark + '</span><span class="body">' + inner +
-        (tickable && id !== "warmup" ? setBar(c, total) : "") + "</span></div>" +
-        (row ? '<div class="how-row">' + row + "</div>" : "") + "</div>";
+      var undo = tickable && c > 0
+        ? '<button class="undo" data-undo="' + id + '" aria-label="' + (warm ? "Undo warm-up" : "Undo one set") + '">' + icon("undo") + "Undo</button>"
+        : "";
+      return '<div class="' + cls + '">' + tick + inner + (tickable ? setProgress(c, total, warm) : "") + "</div>" + (extra || "") + undo + "</div>";
     }
-    var warmHow = P.warmup.items.map(function (x, i) {
-      return x.how ? '<button class="how" data-how="w' + i + '" data-dl="' + dl + '">' + esc(x.short || x.name) + "</button>" : "";
-    }).join("");
-    h += card("warmup",
-      '<span class="name">' + esc(P.warmup.title) + "</span><ul>" +
-      P.warmup.items.map(function (x) { return "<li>" + esc(x.name || x) + "</li>"; }).join("") + "</ul>",
-      warmHow ? '<span class="how-label">How to:</span>' + warmHow : "");
+    function infoBtn(key, name) {
+      return '<button class="info" data-how="' + key + '" data-dl="' + dl + '" aria-label="How to do ' + esc(name) + '">' + icon("info") + "</button>";
+    }
+    var warmList = '<ul class="list">' + P.warmup.items.map(function (x, i) {
+      var nm = x.name || x;
+      return "<li><span>" + esc(nm) + "</span>" + (x.how ? infoBtn("w" + i, nm) : "") + "</li>";
+    }).join("") + "</ul>";
+    h += card("warmup", '<span class="ex-name">' + esc(P.warmup.title) + "</span>", warmList);
     s.exercises.forEach(function (ex, i) {
       h += card("ex" + i,
-        '<span class="name">' + esc(ex.name) + "</span>" +
-        '<span class="sr">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
-        '<span class="meta">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>",
-        ex.how ? '<button class="how" data-how="s' + si + "e" + i + '" data-dl="' + dl + '"><span class="i" aria-hidden="true">ⓘ</span> How to do it</button>' : "");
+        '<span class="ex-name">' + esc(ex.name) + "</span>" +
+        '<span class="rx-big">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
+        '<span class="rest">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>",
+        ex.how ? infoBtn("s" + si + "e" + i, ex.name) : "");
     });
     return h;
   }
 
-  // ---------- "How to do it" panel ----------
+  // ---------- "How to do it" sheet ----------
   var sheet = document.getElementById("sheet");
   var sheetOpener = null;
   function howFor(key) {
@@ -424,8 +493,8 @@
     if (hw.demo && hw.demo.length) {
       h += '<h3>Watch a demo</h3><div class="demo">' + hw.demo.map(function (q) {
         return '<a href="https://www.youtube.com/results?search_query=' + encodeURIComponent(q + " exercise technique") +
-          '" target="_blank" rel="noopener noreferrer">▶ ' + esc(q.charAt(0).toUpperCase() + q.slice(1)) + "</a>";
-      }).join("") + '</div><p class="muted small">Opens a YouTube search in a new tab.</p>';
+          '" target="_blank" rel="noopener noreferrer">' + icon("play") + "<span>" + esc(q.charAt(0).toUpperCase() + q.slice(1)) + "</span>" + icon("ext", "ext") + "</a>";
+      }).join("") + '</div><p class="small">Opens a YouTube search.</p>';
     }
     document.getElementById("sheet-title").textContent = it.title;
     document.getElementById("sheet-body").innerHTML = h;
@@ -443,97 +512,95 @@
     if (b) b.focus({ preventScroll: true });
   }
 
+  // ---------- screens ----------
   function viewToday() {
     var t = today(), ci = cycleInfo(), si = sessionFor(dayIdx(t));
-    var h = '<div class="top"><span>' + esc(DAY_LONG[dayIdx(t)]) + " " + t.getDate() + " " +
-      t.toLocaleDateString(undefined, { month: "short" }) + "</span>" + cyclePill(ci) + "</div>";
 
     if (si < 0) {
       var next = null;
       for (var i = 1; i <= 7; i++) { var d = addDays(t, i); if (S.liftDays.indexOf(dayIdx(d)) >= 0) { next = d; break; } }
-      h += '<div class="rest-day"><div class="emoji" aria-hidden="true">🌊</div><h1>Rest day</h1><p class="muted" style="font-size:20px">Go surf.' +
-        (next ? "<br>Next lift: <b style='color:var(--text)'>" + esc(DAY_LONG[dayIdx(next)]) + "</b>" : "") + "</p></div>";
-      return h + rulesNote();
+      var r = header(longDate(t), "", "", cyclePill(ci));
+      r += '<div class="rest-hero"><div class="wave" aria-hidden="true">🌊</div><h1>Rest Day</h1><p class="subtitle">Go surf.</p></div>';
+      if (next) r += '<div class="group"><div class="row">Next lift<span class="value">' + esc(DAY_LONG[dayIdx(next)]) + "</span></div></div>";
+      return r + rulesNote();
     }
 
     var s = P.sessions[si];
     var ids = ["warmup"].concat(s.exercises.map(function (_, i) { return "ex" + i; }));
     var doneCount = ids.filter(isDone).length;
 
-    h += "<h1>" + esc(s.name) + " · " + esc(s.title) + "</h1>";
-    h += '<div class="muted" style="font-size:20px">' + doneCount + " of " + ids.length + " done</div>";
+    var h = header(longDate(t), s.title, s.name, cyclePill(ci));
+    h += '<p class="summary" id="done-count">' + doneCount + " of " + ids.length + " done</p>";
     h += sessionCards(s, ci.deload, true);
-
-    if (doneCount === ids.length) h += '<div class="banner good">Session done. Nice work. 🤙</div>';
-
-    h += '<button class="big-btn" id="swap">⇄ Swap session (shoulders cooked?)</button>';
+    if (doneCount === ids.length) h += '<div class="callout green">' + icon("check", "ok") + "<span><b>Session done</b>Nice work. 🤙</span></div>";
+    h += '<button class="btn" id="swap">' + icon("swap") + "Swap Session</button>";
+    h += '<p class="footnote">Shoulders cooked from surfing? This swaps today\'s session. The rest of the week reshuffles so you still do all three.</p>';
     return h + rulesNote();
   }
 
   function viewWeek() {
     var t = today(), mon = mondayOf(t), ci = cycleInfo();
-    var h = '<div class="top"><span>This week</span>' + cyclePill(ci) + "</div><h1>Week</h1>";
-    h += '<p class="muted" style="margin:0 0 4px">Tap a lift day to see the workout.</p>';
+    var h = header("This week", "Week", "", cyclePill(ci));
+    h += '<p class="summary">Tap a lift day to see the workout.</p><div class="group">';
     for (var i = 0; i < 7; i++) {
       var d = addDays(mon, i), si = sessionFor(i), isT = iso(d) === iso(t);
       var s = si >= 0 ? P.sessions[si] : null;
-      var right = (isT ? '<span class="pill">Today</span>' : "") + (s ? '<span class="go" aria-hidden="true">›</span>' : "");
+      var dayCol = '<span class="day-col"><b>' + DAY_NAMES[i] + "</b><small>" + d.getDate() + "</small></span>";
       if (s) {
-        h += '<button class="week-row' + (isT ? " today" : "") + '" data-open="' + i + '">' +
-          '<span class="d">' + DAY_NAMES[i] + "</span>" +
-          '<span class="s"><b>' + esc(s.name) + "</b>" + esc(s.title) +
-          (cycleInfo(d).deload ? '<span class="tag">Deload: half sets</span>' : "") + "</span>" +
-          right + "</button>";
+        h += '<button class="row day link' + (isT ? " today" : "") + '" data-open="' + i + '">' + dayCol +
+          '<span class="sess"><b>' + esc(s.title) + "</b><span>" + esc(s.name) + "</span>" +
+          (cycleInfo(d).deload ? '<span class="tag">Deload · half sets</span>' : "") + "</span>" +
+          (isT ? '<span class="capsule">Today</span>' : "") + icon("chevR", "chev") + "</button>";
       } else {
-        h += '<div class="week-row off' + (isT ? " today" : "") + '">' +
-          '<span class="d">' + DAY_NAMES[i] + '</span><span class="s">Rest / surf</span>' + right + "</div>";
+        h += '<div class="row day rest' + (isT ? " today" : "") + '">' + dayCol + '<span class="sess">Rest · Surf</span>' +
+          (isT ? '<span class="capsule plain">Today</span>' : "") + "</div>";
       }
     }
-    h += '<button class="big-btn" data-goto="settings">Change lift days</button>';
+    h += '</div><div class="group" style="margin-top:12px"><button class="row action" data-goto="settings">Change Lift Days</button></div>';
     return h + rulesNote();
   }
 
-  // Read-only look at another day's workout this week (opened from the Week view)
+  // Read-only look at another day's workout this week (opened from the Week screen)
   function viewDay() {
     var d = addDays(mondayOf(today()), openDay), si = sessionFor(openDay);
     if (si < 0) { tab = "week"; return viewWeek(); }   // no longer a lift day (e.g. lift days changed)
     if (openDay === dayIdx(today())) { tab = "today"; return viewToday(); }   // previewed day is now today (app reopened next morning)
     var s = P.sessions[si], ci = cycleInfo(d);
-    var h = '<div class="top"><button class="back" data-goto="week">‹ Week</button>' + cyclePill(ci) + "</div>";
-    h += '<div class="muted" style="font-size:20px;margin-top:14px">' + esc(DAY_LONG[openDay]) + " " + d.getDate() + " " +
-      d.toLocaleDateString(undefined, { month: "short" }) + "</div>";
-    h += "<h1>" + esc(s.name) + " · " + esc(s.title) + "</h1>";
-    h += '<div class="muted" style="font-size:17px">Preview only. Tick exercises off on the day, in the Today tab.</div>';
+    var h = header(longDate(d), s.title, s.name, cyclePill(ci), true);
+    h += '<p class="summary">Preview. Log your sets on the day, from Today.</p>';
     h += sessionCards(s, ci.deload, false);
-    h += '<button class="big-btn" data-goto="week">‹ Back to week</button>';
+    h += '<button class="btn" data-goto="week">' + icon("chevL") + "Back to Week</button>";
     return h + rulesNote();
   }
 
   function viewSettings() {
-    var h = "<h1>Settings</h1>";
-    h += "<h2>Lift days</h2><p class='muted' style='margin-top:0'>Pick 3. Sessions go Day 1 → 2 → 3 in order.</p><div class='days'>";
+    var h = header("", "Settings", "", "");
+    h += '<h2 class="section-h">Lift days</h2><div class="group"><div class="days">';
     for (var i = 0; i < 7; i++) {
       var on = S.liftDays.indexOf(i) >= 0;
       h += '<button class="day-btn' + (on ? " on" : "") + '" aria-pressed="' + on + '" data-day="' + i + '">' + DAY_NAMES[i] + "</button>";
     }
-    h += "</div>";
+    h += "</div></div>";
     var c = S.liftDays.length;
-    h += "<p class='muted'>" + (c === 3 ? "✓ 3 days picked" : c + " picked. Tap to pick " + (c < 3 ? "more" : "fewer") + ".") + "</p>";
+    h += '<p class="footnote" id="days-note">' + (c === 3 ? "3 days picked. " : c + " of 3 picked. Tap a day to " + (c < 3 ? "add" : "remove") + " it. ") +
+      "Sessions go Day 1 → 2 → 3 in order.</p>";
 
     var ci = cycleInfo();
-    h += "<h2>5-week cycle</h2>";
-    h += "<p style='margin-top:0'>" + (ci.notStarted ? "Not started yet." : "You're in <b>week " + ci.week + " of " + ci.of + "</b>" + (ci.cycle > 1 ? " (cycle " + ci.cycle + ")" : "") + ".") + "</p>";
-    h += "<label class='muted' for='start'>Cycle start date (week 1 begins here)</label>";
-    h += '<input type="date" id="start" value="' + esc(S.startDate) + '">';
+    h += '<h2 class="section-h">5-week cycle</h2><div class="group">';
+    h += '<div class="row">This week<span class="value">' +
+      (ci.notStarted ? "Not started" : "Week " + ci.week + " of " + ci.of + (ci.cycle > 1 ? " · cycle " + ci.cycle : "")) + "</span></div>";
+    h += '<div class="row"><label for="start">Start date</label><input type="date" id="start" value="' + esc(S.startDate) + '"></div>';
     if (confirmRestart) {
       // Cancel takes the original button's spot, so an accidental double tap is harmless
-      h += '<button class="big-btn" id="restart-no">Cancel</button>';
-      h += '<button class="big-btn danger" id="restart-yes">Yes, start week 1 on ' + esc(nice(mondayOf(today()))) + "</button>";
+      h += '<button class="row action" id="restart-no">Cancel</button>';
+      h += '<button class="row action danger" id="restart-yes">Start week 1 on ' + esc(nice(mondayOf(today()))) + "</button>";
     } else {
-      h += '<button class="big-btn primary" id="restart">Start new cycle this week</button>';
+      h += '<button class="row action" id="restart">Start New Cycle This Week</button>';
     }
-    h += "<h2>Exercises</h2><p class='muted' style='margin-top:0'>To change exercises, sets, reps or the how-to notes, edit <b style='color:var(--text)'>program.js</b> in your GitHub repo. The README has the steps.</p>";
-    h += "<p class='sync muted'>Everything is saved on this phone only. No account, no server.</p>";
+    h += '</div><p class="footnote">Week ' + (P.cycleWeeks || 5) + " of every cycle is a deload: sets are halved automatically.</p>";
+    h += '<h2 class="section-h">Program</h2><div class="group"><div class="row">' +
+      "<span>To change exercises, sets, reps or the how-to notes, edit <b>program.js</b> in your GitHub repo. The README has the steps.</span></div></div>";
+    h += '<p class="footnote">Saved on this iPhone only. No account, no server.</p>';
     return h;
   }
 
@@ -577,27 +644,27 @@
 
   document.addEventListener("click", function (e) {
     if (!sheet.hidden) {
-      // panel open: only its close button, the dimmed area around it, and its demo links do anything
+      // sheet open: only its close button, the dimmed area around it, and its demo links do anything
       if (e.target === sheet || e.target.closest("#sheet-close")) closeHow();
       return;
     }
     var el = e.target.closest("button, [data-tick]");
-    var cardEl = !el && !e.target.closest(".how-row") && e.target.closest(".card");
-    if (cardEl) el = cardEl.querySelector("[data-tick]");   // a tap on the card's edge still logs a set (not near the How / Undo buttons)
+    var cardEl = !el && e.target.closest(".card.tickable");
+    if (cardEl) el = cardEl.querySelector("[data-tick]");   // a tap anywhere else on a Today card logs a set
     if (!el) return;
     if (el.dataset.how) { openHow(el); return; }
     var keyboard = e.detail === 0;      // activated with Enter/Space rather than a tap
     var sel = keyboard ? selectorFor(el) : null;
     handle(el);
     if (sel) refocus(sel === "#restart" ? "#restart-no" : sel === "#restart-no" || sel === "#restart-yes" ? "#restart" : sel,
-      el.dataset.undo ? '[data-tick="' + el.dataset.undo + '"]' : null);   // undo button gone at 0 sets: focus the card
+      el.dataset.undo ? '[data-tick="' + el.dataset.undo + '"]' : null);   // Undo gone at 0 sets: focus the card
   });
 
   function handle(el) {
     if (el.dataset.tab) { go(el.dataset.tab); return; }
     if (el.dataset.goto) { go(el.dataset.goto); return; }
     if (el.dataset.open) {
-      // today's lift day opens the tickable Today screen; other days open a preview
+      // today's lift day opens the Today screen; other days open a preview
       openDay = +el.dataset.open;
       go(openDay === dayIdx(today()) ? "today" : "day");
       return;
@@ -611,17 +678,17 @@
       else if (S.liftDays.length < 3) S.liftDays.push(d);
       else return;                       // already 3 picked: untick one first
       S.order = null;                    // new days = fresh Day 1/2/3 order
-      save(["liftDays", "order"]); render(); return;
+      save(); render(); return;
     }
     if (el.id === "restart") { confirmRestart = true; render(); return; }
     if (el.id === "restart-no") { confirmRestart = false; render(); return; }
     if (el.id === "restart-yes") {
       confirmRestart = false;
-      S.startDate = iso(mondayOf(today())); save(["startDate"]); render(); return;
+      S.startDate = iso(mondayOf(today())); save(); render(); return;
     }
   }
 
-  // keyboard: Esc closes the panel and Tab stays inside it; Enter/Space on a card logs a set
+  // keyboard: Esc closes the sheet and Tab stays inside it; Enter/Space on a card logs a set
   document.addEventListener("keydown", function (e) {
     if (!sheet.hidden) {
       if (e.key === "Escape") { e.preventDefault(); closeHow(); return; }
@@ -644,7 +711,7 @@
   });
 
   document.addEventListener("change", function (e) {
-    if (e.target.id === "start" && isIso(e.target.value)) { S.startDate = e.target.value; save(["startDate"]); render(); }
+    if (e.target.id === "start" && isIso(e.target.value)) { S.startDate = e.target.value; save(); render(); }
   });
 
   // Coming back to the app (e.g. next morning): pick up anything another tab saved,
