@@ -13,7 +13,11 @@
 <link rel="manifest" href="manifest.json">
 <title>Pang Fitness</title>
 <style>
+  /* Layout: one column of big tap-cards over a fixed bottom tab bar, readable from across a garage gym.
+     Deliberately single-theme (dark), as the owner asked. */
+  [hidden] { display: none !important; }
   :root {
+    color-scheme: dark;
     --bg: #0b0d10;
     --card: #161a20;
     --card2: #1f252d;
@@ -23,48 +27,81 @@
     --accent: #3ddc97;
     --accent-ink: #062b1c;
     --warn: #ffb648;
+    --warn-ink: #2b1a00;
+    --nav-bg: rgba(11, 13, 16, 0.94);
+    --scrim: rgba(0, 0, 0, 0.62);
+    --accent-soft: rgba(61, 220, 151, 0.35);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  html { background: var(--bg); }
   body {
-    font: 18px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 96px);
-    max-width: 640px; margin: 0 auto;
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 18px/1.35 var(--font);
+    padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
-  h1 { font-size: 40px; line-height: 1.05; margin: 4px 0 6px; letter-spacing: -0.5px; }
+  main { max-width: 640px; margin: 0 auto; }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; background: none; }
+  button:focus-visible, [role="button"]:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  h1 { font-size: 40px; line-height: 1.05; margin: 4px 0 6px; letter-spacing: -0.5px; text-wrap: balance; }
   h2 { font-size: 22px; margin: 28px 0 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
   .muted { color: var(--dim); }
 
   .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--dim); font-size: 17px; }
-  .pill { display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--card2); font-weight: 600; color: var(--text); }
-  .pill.deload { background: var(--warn); color: #2b1a00; }
+  .pill { display: inline-block; padding: 6px 12px; border-radius: 999px; background: var(--card2); font-weight: 600; color: var(--text); white-space: nowrap; }
+  .pill.deload { background: var(--warn); color: var(--warn-ink); }
 
-  .banner { background: var(--warn); color: #2b1a00; border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 20px; margin: 12px 0; }
+  .banner { background: var(--warn); color: var(--warn-ink); border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 20px; margin: 12px 0; }
+  .banner.good { background: var(--accent); color: var(--accent-ink); }
 
   .big-btn {
     display: block; width: 100%; padding: 18px; border-radius: 16px;
-    background: var(--card2); font-size: 20px; font-weight: 700; margin-top: 12px;
+    background: var(--card2); color: var(--text); font-size: 20px; font-weight: 700; margin-top: 12px;
   }
   .big-btn.primary { background: var(--accent); color: var(--accent-ink); }
+  .big-btn.danger { background: var(--warn); color: var(--warn-ink); }
 
   .card {
-    cursor: pointer; user-select: none; -webkit-user-select: none;
-    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    width: 100%; text-align: left;
     background: var(--card); border: 2px solid var(--line); border-radius: 18px;
     padding: 16px; margin: 10px 0;
   }
+  .card:not(.preview) { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .tick { display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; -webkit-user-select: none; border-radius: 12px; }
+  .card.preview .tick { cursor: default; }
+  .how-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 -16px -16px; padding: 12px 16px 16px; }
+  .how-label { font-size: 16px; color: var(--dim); }
+  .how {
+    min-height: 44px; padding: 8px 14px; border-radius: 999px;
+    border: 2px solid var(--line); color: var(--text); font-size: 17px; font-weight: 700;
+  }
+  .how .i { color: var(--accent); }
   .card .check {
     flex: 0 0 44px; height: 44px; border-radius: 50%; border: 3px solid var(--line);
     display: grid; place-items: center; font-size: 26px; font-weight: 900; color: transparent;
   }
   .card .body { flex: 1; min-width: 0; }
-  .card .name { font-size: 24px; font-weight: 700; line-height: 1.15; }
-  .card .sr { font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
-  .card .meta { font-size: 18px; color: var(--dim); margin-top: 2px; }
-  .card.done { border-color: var(--accent); opacity: 0.55; }
+  .card .name { display: block; font-size: 24px; font-weight: 700; line-height: 1.15; }
+  .card .sr { display: block; font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-top: 2px; }
+  .card .meta { display: block; font-size: 18px; color: var(--dim); margin-top: 2px; }
+  .card.partial { border-color: var(--accent-soft); }
+  .card.partial .check { border-color: var(--accent); }
+  .sets { display: block; margin-top: 10px; }
+  .sets-label { display: block; font-size: 20px; font-weight: 800; color: var(--accent); }
+  .bar { display: flex; gap: 6px; margin-top: 6px; }
+  .seg { flex: 1; height: 14px; border-radius: 7px; background: var(--card2); border: 2px solid var(--line); }
+  .seg.on { background: var(--accent); border-color: var(--accent); }
+  .seg.now { border-color: var(--accent); }
+  .how.undo { color: var(--dim); }
+  .card.done { border-color: var(--accent); }
+  .card.done .tick { opacity: 0.55; }
   .card.done .check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .card.done .name { text-decoration: line-through; }
+  .card.preview { cursor: default; }
+  .card.preview .check { display: none; }
   .warm li { font-size: 20px; margin: 4px 0; }
   .warm ul { margin: 6px 0 0; padding-left: 22px; }
 
@@ -77,21 +114,16 @@
   }
   button.week-row { width: 100%; text-align: left; }
   .week-row.today { border-color: var(--accent); }
-  .week-row .d { width: 64px; font-size: 22px; font-weight: 800; }
-  .week-row .s { flex: 1; font-size: 20px; }
+  .week-row .d { width: 64px; flex: 0 0 64px; font-size: 22px; font-weight: 800; }
+  .week-row .s { flex: 1; min-width: 0; font-size: 20px; }
   .week-row .s b { display: block; }
   .week-row .s .tag { display: block; font-size: 16px; color: var(--warn); font-weight: 700; }
   .week-row.off .s { color: var(--dim); }
   .week-row .go { font-size: 34px; color: var(--dim); line-height: 1; }
-  .back { background: var(--card2); padding: 10px 16px; border-radius: 999px; font-size: 18px; font-weight: 700; }
-  .card.preview { cursor: default; }
-  .card.preview .check { display: none; }
+  .back { background: var(--card2); color: var(--text); padding: 10px 16px; border-radius: 999px; font-size: 18px; font-weight: 700; }
 
   .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .day-btn {
-    padding: 18px 0; border-radius: 14px; background: var(--card2); font-size: 17px; font-weight: 700;
-    border: 2px solid transparent;
-  }
+  .day-btn { padding: 18px 0; border-radius: 14px; background: var(--card2); color: var(--text); font-size: 17px; font-weight: 700; min-width: 0; }
   .day-btn.on { background: var(--accent); color: var(--accent-ink); }
 
   input[type=date] {
@@ -102,34 +134,98 @@
   .note { background: var(--card); border-radius: 16px; padding: 6px 18px; border: 2px solid var(--line); }
   .note li { margin: 10px 0; font-size: 19px; }
   .note ul { padding-left: 20px; }
+  .sync { font-size: 16px; margin-top: 28px; }
+  .sync.on { color: var(--accent); }
 
   nav {
-    position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px;
-    padding: 10px 12px calc(env(safe-area-inset-bottom) + 10px);
-    background: rgba(11,13,16,0.94); border-top: 1px solid var(--line);
+    position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; z-index: 5;
+    padding-top: 10px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    background: var(--nav-bg); border-top: 1px solid var(--line);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-  nav button { flex: 1; padding: 14px 0; border-radius: 14px; background: transparent; font-size: 18px; font-weight: 700; color: var(--dim); }
+  nav button { flex: 1; padding: 14px 0; border-radius: 14px; font-size: 18px; font-weight: 700; color: var(--dim); }
   nav button.active { background: var(--card2); color: var(--text); }
+
+  /* "How to do it" panel: slides up from the bottom over everything */
+  body.locked { overflow: hidden; }
+  .sheet-backdrop {
+    position: fixed; inset: 0; z-index: 20; background: var(--scrim);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .sheet-backdrop[hidden] { display: none; }
+  .sheet {
+    width: 100%; max-width: 640px; max-height: 90%; display: flex; flex-direction: column;
+    background: var(--card); border: 2px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .sheet-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding-block: 18px 6px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .sheet-head h2 { margin: 6px 0 0; color: var(--text); text-transform: none; letter-spacing: -0.3px; font-size: 28px; line-height: 1.15; }
+  .sheet-close { flex: 0 0 48px; height: 48px; border-radius: 50%; background: var(--card2); color: var(--text); font-size: 22px; font-weight: 700; }
+  .sheet-body {
+    overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    padding-block: 0 28px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+    font-size: 20px; line-height: 1.4;
+  }
+  .sheet-body .rx { font-size: 24px; font-weight: 800; margin: 2px 0 0; }
+  .sheet-body h3 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin: 22px 0 6px; }
+  .sheet-body p { margin: 0; }
+  .sheet-body ol, .sheet-body ul { margin: 0; padding-left: 26px; }
+  .sheet-body li { margin: 8px 0; }
+  .sheet-body .demo { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sheet-body .demo a {
+    display: inline-flex; align-items: center; min-height: 48px; padding: 10px 16px; border-radius: 999px;
+    background: var(--card2); color: var(--accent); font-weight: 700; text-decoration: none;
+  }
+  .sheet-body .small { font-size: 15px; margin-top: 8px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sheet-backdrop:not([hidden]) .sheet { animation: rise 0.2s ease-out; }
+    @keyframes rise { from { transform: translateY(40px); } to { transform: none; } }
+  }
 </style>
 </head>
 <body>
 <main id="app"></main>
-<nav>
+<nav aria-label="Sections">
   <button data-tab="today">Today</button>
   <button data-tab="week">Week</button>
   <button data-tab="settings">Settings</button>
 </nav>
+<div class="sheet-backdrop" id="sheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="sheet-head">
+      <h2 id="sheet-title"></h2>
+      <button class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
 
 <script src="program.js"></script>
 <script>
 (function () {
   var P = window.PROGRAM;
+  if (!P || !Array.isArray(P.sessions) || !P.warmup) {
+    document.getElementById("app").innerHTML =
+      '<h1>Couldn\'t read your program</h1><p class="muted" style="font-size:20px">There\'s probably a missing comma, quote or bracket in <b style="color:var(--text)">program.js</b>. ' +
+      "Undo your last change to that file on GitHub (or fix the typo) and this page will work again.</p>";
+    return;
+  }
   var DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   var DAY_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   var KEY = "pangFitness.v1";
   var tab = "today";      // "today" | "week" | "day" | "settings"
   var openDay = 0;        // which weekday the "day" view is showing (Mon = 0)
+  var confirmRestart = false;
 
   // ---------- dates (all local, date-only) ----------
   function today() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
@@ -139,22 +235,41 @@
   function iso(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
+  function isIso(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
   function parseIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
   function nice(d) { return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }); }
 
-  // ---------- saved data (on this phone only) ----------
-  var S = load();
-  function load() {
-    var s = {};
-    try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
-    if (!Array.isArray(s.liftDays)) s.liftDays = [0, 2, 4];              // Mon, Wed, Fri
-    if (!s.startDate) s.startDate = iso(mondayOf(today()));
-    if (!s.order || s.order.week !== iso(mondayOf(today()))) s.order = null;   // swaps reset each week
-    if (!s.ticks || s.ticks.date !== iso(today())) s.ticks = null;         // ticks reset each day
-    return s;
+  // ---------- saved data ----------
+  // One small record: lift days, cycle start, this week's swap order, today's sets.
+  // Kept on this phone only (localStorage). No account, no server.
+  function normalize(src) {
+    var s = src && typeof src === "object" ? JSON.parse(JSON.stringify(src)) : {};
+    var thisWeek = iso(mondayOf(today()));
+    var days = Array.isArray(s.liftDays)
+      ? s.liftDays.filter(function (d, i, a) { return d === (d | 0) && d >= 0 && d <= 6 && a.indexOf(d) === i; }).slice(0, 3)
+      : [0, 2, 4];                                                         // Mon, Wed, Fri
+    return {
+      liftDays: days,
+      startDate: isIso(s.startDate) ? s.startDate : thisWeek,
+      order: s.order && s.order.week === thisWeek && Array.isArray(s.order.list) ? s.order : null,   // swaps reset each week
+      ticks: s.ticks && s.ticks.date === iso(today()) && s.ticks.done ? s.ticks : null,           // ticks reset each day
+      updatedAt: typeof s.updatedAt === "number" ? s.updatedAt : 0,
+    };
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function readLocal() {
+    try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function saveLocal() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  var hadLocal = !!readLocal();
+  var S = normalize(readLocal());
+  if (!hadLocal) saveLocal();            // pin the default start date so week 1 doesn't move every Monday
+
+  function save() {                      // call after every change the person makes
+    S.updatedAt = Math.max(Date.now(), (S.updatedAt || 0) + 1);
+    saveLocal();
+  }
 
   // ---------- program logic ----------
   // Where a date sits in the 5-week cycle (defaults to today)
@@ -174,7 +289,8 @@
     var pos = sortedLiftDays().indexOf(wd);
     if (pos < 0) return -1;
     var order = weekOrder();
-    return order[pos % order.length];
+    var si = order[pos % order.length];
+    return si >= 0 && si < P.sessions.length ? si : pos % P.sessions.length;
   }
   function swapToday() {
     var pos = sortedLiftDays().indexOf(dayIdx(today()));
@@ -192,15 +308,37 @@
     }
     S.order = { week: iso(mondayOf(today())), list: list };
     S.ticks = null;
-    save(); render();
+    save(["order", "ticks"]); render();
   }
   function sets(ex, deload) { return deload ? Math.ceil(ex.sets / 2) : ex.sets; }
 
-  function isDone(id) { return !!(S.ticks && S.ticks.done[id]); }
-  function toggle(id) {
-    if (!S.ticks) S.ticks = { date: iso(today()), done: {} };
-    S.ticks.done[id] = !S.ticks.done[id];
-    save(); render();
+  // Sets logged today. ticks.done[id] holds how many sets are done (older saves used true = all done).
+  // The warm-up counts as one "set".
+  function totalSets(id) {
+    if (id === "warmup") return 1;
+    var si = sessionFor(dayIdx(today())), m = /^ex(\d+)$/.exec(id);
+    var ex = si >= 0 && m ? P.sessions[si].exercises[+m[1]] : null;
+    return ex ? sets(ex, cycleInfo().deload) : 1;
+  }
+  function setsDone(id) {
+    var t = S.ticks && S.ticks.date === iso(today()) ? S.ticks : null;
+    var v = t && t.done[id], total = totalSets(id);
+    if (v === true) return total;
+    return typeof v === "number" && v > 0 ? Math.min(Math.floor(v), total) : 0;
+  }
+  function isDone(id) { return setsDone(id) >= totalSets(id); }
+  function logSet(id) {                       // a tap on the card: one more set done (a finished card ignores taps)
+    var c = setsDone(id);
+    if (c >= totalSets(id)) { render(); return; }          // finished (or the day changed under us): just redraw
+    if (!S.ticks || S.ticks.date !== iso(today())) S.ticks = { date: iso(today()), done: {} };
+    S.ticks.done[id] = c + 1;
+    save(["ticks"]); render();
+  }
+  function undoSet(id) {                      // "Undo set": take one set back off
+    var c = setsDone(id);
+    if (c <= 0 || !S.ticks) { render(); return; }
+    if (c > 1) S.ticks.done[id] = c - 1; else delete S.ticks.done[id];
+    save(["ticks"]); render();
   }
 
   // ---------- views ----------
@@ -216,27 +354,93 @@
       P.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul></div>";
   }
 
-  // Warm-up + exercise cards. tickable = Today (tap to tick); otherwise a read-only preview.
+  // "Set 2 of 4" plus one bar segment per set: filled = done, outlined = the set you're on now
+  function setBar(c, total) {
+    var segs = "";
+    for (var k = 0; k < total; k++) segs += '<span class="seg' + (k < c ? " on" : k === c ? " now" : "") + '"></span>';
+    var label = c >= total ? "All " + total + " sets done ✓" : "Set " + (c + 1) + " of " + total;
+    return '<span class="sets"><span class="sets-label">' + label + "</span>" +
+      '<span class="bar" aria-hidden="true">' + segs + "</span></span>";
+  }
+
+  // Warm-up + exercise cards. tickable = Today (each tap on a card logs one set); otherwise a read-only preview.
+  // Each card has a separate "How to do it" button below the tap area, so opening it never ticks.
   function sessionCards(s, deload, tickable) {
+    var si = P.sessions.indexOf(s), dl = deload ? "1" : "0";
     var h = "";
     if (deload) h += '<div class="banner">Deload week: half the sets (already halved below)</div>';
-    function open(id) {
-      return tickable
-        ? '<div role="button" class="card' + (isDone(id) ? " done" : "") + (id === "warmup" ? " warm" : "") + '" data-tick="' + id + '">'
-        : '<div class="card preview' + (id === "warmup" ? " warm" : "") + '">';
+    function card(id, inner, howRow) {
+      var total = tickable ? totalSets(id) : 0, c = tickable ? setsDone(id) : 0, done = tickable && c >= total;
+      var cls = "card" + (done ? " done" : c > 0 ? " partial" : "") + (tickable ? "" : " preview") + (id === "warmup" ? " warm" : "");
+      var tick = tickable
+        ? '<div role="button" tabindex="0"' + (id === "warmup" ? ' aria-pressed="' + done + '"' : "") + ' class="tick" data-tick="' + id + '">'
+        : '<div class="tick">';
+      var mark = done ? "✓" : "";
+      var undo = tickable && c > 0 ? '<button class="how undo" data-undo="' + id + '"><span aria-hidden="true">↶</span> Undo' + (id === "warmup" ? "" : " set") + "</button>" : "";
+      var row = (howRow || "") + undo;
+      return '<div class="' + cls + '">' + tick +
+        '<span class="check" aria-hidden="true">' + mark + '</span><span class="body">' + inner +
+        (tickable && id !== "warmup" ? setBar(c, total) : "") + "</span></div>" +
+        (row ? '<div class="how-row">' + row + "</div>" : "") + "</div>";
     }
-    h += open("warmup") +
-      '<span class="check">✓</span><span class="body"><span class="name">' + esc(P.warmup.title) + "</span><ul>" +
-      P.warmup.items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul></span></div>";
+    var warmHow = P.warmup.items.map(function (x, i) {
+      return x.how ? '<button class="how" data-how="w' + i + '" data-dl="' + dl + '">' + esc(x.short || x.name) + "</button>" : "";
+    }).join("");
+    h += card("warmup",
+      '<span class="name">' + esc(P.warmup.title) + "</span><ul>" +
+      P.warmup.items.map(function (x) { return "<li>" + esc(x.name || x) + "</li>"; }).join("") + "</ul>",
+      warmHow ? '<span class="how-label">How to:</span>' + warmHow : "");
     s.exercises.forEach(function (ex, i) {
-      h += open("ex" + i) +
-        '<span class="check">✓</span><span class="body">' +
-        '<span class="name" style="display:block">' + esc(ex.name) + "</span>" +
-        '<span class="sr" style="display:block">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
-        '<span class="meta" style="display:block">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>" +
-        "</span></div>";
+      h += card("ex" + i,
+        '<span class="name">' + esc(ex.name) + "</span>" +
+        '<span class="sr">' + sets(ex, deload) + " × " + esc(ex.reps) + "</span>" +
+        '<span class="meta">Rest ' + esc(ex.rest) + (ex.note ? " · " + esc(ex.note) : "") + "</span>",
+        ex.how ? '<button class="how" data-how="s' + si + "e" + i + '" data-dl="' + dl + '"><span class="i" aria-hidden="true">ⓘ</span> How to do it</button>' : "");
     });
     return h;
+  }
+
+  // ---------- "How to do it" panel ----------
+  var sheet = document.getElementById("sheet");
+  var sheetOpener = null;
+  function howFor(key) {
+    var m = /^w(\d+)$/.exec(key);
+    if (m) { var w = P.warmup.items[+m[1]]; return w && w.how ? { title: w.name, how: w.how } : null; }
+    m = /^s(\d+)e(\d+)$/.exec(key);
+    if (m) {
+      var s = P.sessions[+m[1]], ex = s && s.exercises[+m[2]];
+      return ex && ex.how ? { title: ex.name, ex: ex, how: ex.how } : null;
+    }
+    return null;
+  }
+  function openHow(btn) {
+    var it = howFor(btn.dataset.how);
+    if (!it) return;
+    var hw = it.how, h = "";
+    if (it.ex) h += '<p class="rx">' + sets(it.ex, btn.dataset.dl === "1") + " × " + esc(it.ex.reps) + " · Rest " + esc(it.ex.rest) + "</p>";
+    if (hw.setup) h += "<h3>Set up</h3><p>" + esc(hw.setup) + "</p>";
+    if (hw.steps && hw.steps.length) h += "<h3>Do it</h3><ol>" + hw.steps.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol>";
+    if (hw.avoid && hw.avoid.length) h += "<h3>Avoid</h3><ul>" + hw.avoid.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
+    if (hw.demo && hw.demo.length) {
+      h += '<h3>Watch a demo</h3><div class="demo">' + hw.demo.map(function (q) {
+        return '<a href="https://www.youtube.com/results?search_query=' + encodeURIComponent(q + " exercise technique") +
+          '" target="_blank" rel="noopener noreferrer">▶ ' + esc(q.charAt(0).toUpperCase() + q.slice(1)) + "</a>";
+      }).join("") + '</div><p class="muted small">Opens a YouTube search in a new tab.</p>';
+    }
+    document.getElementById("sheet-title").textContent = it.title;
+    document.getElementById("sheet-body").innerHTML = h;
+    sheetOpener = btn.dataset.how;
+    sheet.hidden = false;
+    document.body.classList.add("locked");
+    document.getElementById("sheet-body").scrollTop = 0;
+    document.getElementById("sheet-close").focus({ preventScroll: true });
+  }
+  function closeHow() {
+    if (sheet.hidden) return;
+    sheet.hidden = true;
+    document.body.classList.remove("locked");
+    var b = sheetOpener && document.querySelector('[data-how="' + sheetOpener + '"]');
+    if (b) b.focus({ preventScroll: true });
   }
 
   function viewToday() {
@@ -247,7 +451,7 @@
     if (si < 0) {
       var next = null;
       for (var i = 1; i <= 7; i++) { var d = addDays(t, i); if (S.liftDays.indexOf(dayIdx(d)) >= 0) { next = d; break; } }
-      h += '<div class="rest-day"><div class="emoji">🌊</div><h1>Rest day</h1><p class="muted" style="font-size:20px">Go surf.' +
+      h += '<div class="rest-day"><div class="emoji" aria-hidden="true">🌊</div><h1>Rest day</h1><p class="muted" style="font-size:20px">Go surf.' +
         (next ? "<br>Next lift: <b style='color:var(--text)'>" + esc(DAY_LONG[dayIdx(next)]) + "</b>" : "") + "</p></div>";
       return h + rulesNote();
     }
@@ -260,7 +464,7 @@
     h += '<div class="muted" style="font-size:20px">' + doneCount + " of " + ids.length + " done</div>";
     h += sessionCards(s, ci.deload, true);
 
-    if (doneCount === ids.length) h += '<div class="banner" style="background:var(--accent);color:var(--accent-ink)">Session done. Nice work. 🤙</div>';
+    if (doneCount === ids.length) h += '<div class="banner good">Session done. Nice work. 🤙</div>';
 
     h += '<button class="big-btn" id="swap">⇄ Swap session (shoulders cooked?)</button>';
     return h + rulesNote();
@@ -273,7 +477,7 @@
     for (var i = 0; i < 7; i++) {
       var d = addDays(mon, i), si = sessionFor(i), isT = iso(d) === iso(t);
       var s = si >= 0 ? P.sessions[si] : null;
-      var right = (isT ? '<span class="pill">Today</span>' : "") + (s ? '<span class="go">›</span>' : "");
+      var right = (isT ? '<span class="pill">Today</span>' : "") + (s ? '<span class="go" aria-hidden="true">›</span>' : "");
       if (s) {
         h += '<button class="week-row' + (isT ? " today" : "") + '" data-open="' + i + '">' +
           '<span class="d">' + DAY_NAMES[i] + "</span>" +
@@ -309,7 +513,8 @@
     var h = "<h1>Settings</h1>";
     h += "<h2>Lift days</h2><p class='muted' style='margin-top:0'>Pick 3. Sessions go Day 1 → 2 → 3 in order.</p><div class='days'>";
     for (var i = 0; i < 7; i++) {
-      h += '<button class="day-btn' + (S.liftDays.indexOf(i) >= 0 ? " on" : "") + '" data-day="' + i + '">' + DAY_NAMES[i] + "</button>";
+      var on = S.liftDays.indexOf(i) >= 0;
+      h += '<button class="day-btn' + (on ? " on" : "") + '" aria-pressed="' + on + '" data-day="' + i + '">' + DAY_NAMES[i] + "</button>";
     }
     h += "</div>";
     var c = S.liftDays.length;
@@ -320,9 +525,15 @@
     h += "<p style='margin-top:0'>" + (ci.notStarted ? "Not started yet." : "You're in <b>week " + ci.week + " of " + ci.of + "</b>" + (ci.cycle > 1 ? " (cycle " + ci.cycle + ")" : "") + ".") + "</p>";
     h += "<label class='muted' for='start'>Cycle start date (week 1 begins here)</label>";
     h += '<input type="date" id="start" value="' + esc(S.startDate) + '">';
-    h += '<button class="big-btn primary" id="restart">Start new cycle this week</button>';
-    h += "<h2>Exercises</h2><p class='muted' style='margin-top:0'>To change exercises, sets or reps, edit the <b style='color:var(--text)'>program.js</b> file in your GitHub repo. The README has the steps.</p>";
-    h += "<p class='muted' style='font-size:15px;margin-top:28px'>Everything is saved on this phone only. No account, no server.</p>";
+    if (confirmRestart) {
+      // Cancel takes the original button's spot, so an accidental double tap is harmless
+      h += '<button class="big-btn" id="restart-no">Cancel</button>';
+      h += '<button class="big-btn danger" id="restart-yes">Yes, start week 1 on ' + esc(nice(mondayOf(today()))) + "</button>";
+    } else {
+      h += '<button class="big-btn primary" id="restart">Start new cycle this week</button>';
+    }
+    h += "<h2>Exercises</h2><p class='muted' style='margin-top:0'>To change exercises, sets, reps or the how-to notes, edit <b style='color:var(--text)'>program.js</b> in your GitHub repo. The README has the steps.</p>";
+    h += "<p class='sync muted'>Everything is saved on this phone only. No account, no server.</p>";
     return h;
   }
 
@@ -340,22 +551,59 @@
     var app = document.getElementById("app");
     app.innerHTML = tab === "week" ? viewWeek() : tab === "day" ? viewDay() : tab === "settings" ? viewSettings() : viewToday();
     var navTab = tab === "day" ? "week" : tab;          // a day's workout lives under Week
-    document.querySelectorAll("nav button").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === navTab); });
+    document.querySelectorAll("nav button").forEach(function (b) {
+      var on = b.dataset.tab === navTab;
+      b.classList.toggle("active", on);
+      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
     keepAwake(tab === "today" && sessionFor(dayIdx(today())) >= 0);
   }
 
+  function go(t) { tab = t; confirmRestart = false; window.scrollTo(0, 0); render(); }
+
+  // After a redraw, put keyboard focus back on the control that was used
+  function refocus(sel, fallback) {
+    if (!sel) return;
+    var n = document.querySelector(sel) || (fallback && document.querySelector(fallback));
+    if (n) n.focus({ preventScroll: true });
+  }
+  function selectorFor(el) {
+    if (el.dataset.tick) return '[data-tick="' + el.dataset.tick + '"]';
+    if (el.dataset.undo) return '[data-undo="' + el.dataset.undo + '"]';
+    if (el.dataset.day) return '[data-day="' + el.dataset.day + '"]';
+    if (el.id) return "#" + el.id;
+    return null;
+  }
+
   document.addEventListener("click", function (e) {
+    if (!sheet.hidden) {
+      // panel open: only its close button, the dimmed area around it, and its demo links do anything
+      if (e.target === sheet || e.target.closest("#sheet-close")) closeHow();
+      return;
+    }
     var el = e.target.closest("button, [data-tick]");
+    var cardEl = !el && !e.target.closest(".how-row") && e.target.closest(".card");
+    if (cardEl) el = cardEl.querySelector("[data-tick]");   // a tap on the card's edge still logs a set (not near the How / Undo buttons)
     if (!el) return;
-    if (el.dataset.tab) { tab = el.dataset.tab; window.scrollTo(0, 0); render(); return; }
-    if (el.dataset.goto) { tab = el.dataset.goto; window.scrollTo(0, 0); render(); return; }
+    if (el.dataset.how) { openHow(el); return; }
+    var keyboard = e.detail === 0;      // activated with Enter/Space rather than a tap
+    var sel = keyboard ? selectorFor(el) : null;
+    handle(el);
+    if (sel) refocus(sel === "#restart" ? "#restart-no" : sel === "#restart-no" || sel === "#restart-yes" ? "#restart" : sel,
+      el.dataset.undo ? '[data-tick="' + el.dataset.undo + '"]' : null);   // undo button gone at 0 sets: focus the card
+  });
+
+  function handle(el) {
+    if (el.dataset.tab) { go(el.dataset.tab); return; }
+    if (el.dataset.goto) { go(el.dataset.goto); return; }
     if (el.dataset.open) {
       // today's lift day opens the tickable Today screen; other days open a preview
       openDay = +el.dataset.open;
-      tab = openDay === dayIdx(today()) ? "today" : "day";
-      window.scrollTo(0, 0); render(); return;
+      go(openDay === dayIdx(today()) ? "today" : "day");
+      return;
     }
-    if (el.dataset.tick) { toggle(el.dataset.tick); return; }
+    if (el.dataset.tick) { logSet(el.dataset.tick); return; }
+    if (el.dataset.undo) { undoSet(el.dataset.undo); return; }
     if (el.id === "swap") { swapToday(); return; }
     if (el.dataset.day) {
       var d = +el.dataset.day, k = S.liftDays.indexOf(d);
@@ -363,22 +611,49 @@
       else if (S.liftDays.length < 3) S.liftDays.push(d);
       else return;                       // already 3 picked: untick one first
       S.order = null;                    // new days = fresh Day 1/2/3 order
-      save(); render(); return;
+      save(["liftDays", "order"]); render(); return;
     }
-    if (el.id === "restart") {
-      if (confirm("Start a new 5-week cycle from this Monday?")) {
-        S.startDate = iso(mondayOf(today())); save(); render();
+    if (el.id === "restart") { confirmRestart = true; render(); return; }
+    if (el.id === "restart-no") { confirmRestart = false; render(); return; }
+    if (el.id === "restart-yes") {
+      confirmRestart = false;
+      S.startDate = iso(mondayOf(today())); save(["startDate"]); render(); return;
+    }
+  }
+
+  // keyboard: Esc closes the panel and Tab stays inside it; Enter/Space on a card logs a set
+  document.addEventListener("keydown", function (e) {
+    if (!sheet.hidden) {
+      if (e.key === "Escape") { e.preventDefault(); closeHow(); return; }
+      if (e.key === "Tab") {
+        var f = sheet.querySelectorAll("button, a[href]");
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        else if (!sheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
       }
+      return;
+    }
+    var el = e.target.closest && e.target.closest("[data-tick]");
+    if (el && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      var id = el.dataset.tick;
+      logSet(id);
+      refocus('[data-tick="' + id + '"]');
     }
   });
 
   document.addEventListener("change", function (e) {
-    if (e.target.id === "start" && e.target.value) { S.startDate = e.target.value; save(); render(); }
+    if (e.target.id === "start" && isIso(e.target.value)) { S.startDate = e.target.value; save(["startDate"]); render(); }
   });
 
-  // When you come back to the app (e.g. next morning), refresh for the new day
+  // Coming back to the app (e.g. next morning): pick up anything another tab saved,
+  // re-apply the daily/weekly resets, and redraw
   document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") { S = load(); render(); }
+    if (document.visibilityState !== "visible") return;
+    var l = normalize(readLocal()), m = normalize(S);
+    S = l.updatedAt > m.updatedAt ? l : m;
+    render();
   });
 
   render();
