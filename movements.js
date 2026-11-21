@@ -53,6 +53,7 @@ window.MOVEMENTS = {
     { name: "KB halo", focus: "Rotation & Core", sets: "3", reps: "5-8 each way", cue: "Ribs down and glutes tight; circle the bell close to your head.", equipment: "Kettlebell" },
     { name: "DB woodchop", focus: "Rotation & Core", sets: "3", reps: "5-8/side", cue: "Turn from the hips and pivot the back foot; arms stay long.", equipment: "Dumbbell" },
     { name: "Hanging knee raise / toes-to-bar", focus: "Rotation & Core", sets: "3", reps: "5-8", cue: "Curl your hips up toward the bar and lower slowly, no swinging.", equipment: "Pull-up bar" },
+    { name: "Farmer or suitcase carry", focus: "Rotation & Core", sets: "3", reps: "30m", cue: "Stand tall and walk with short, quick steps; on a one-hand carry, don't lean.", equipment: "Heavy dumbbells or kettlebells" },
     { name: "Dead bug", focus: "Rotation & Core", sets: "3", reps: "5-8/side", cue: "Keep your lower back pressed into the floor the whole time.", equipment: "None" },
     { name: "KB windmill", focus: "Rotation & Core", sets: "3", reps: "5-8/side", cue: "Eyes on the bell overhead; push your hip out and fold sideways.", equipment: "Kettlebell" },
 
@@ -60,6 +61,7 @@ window.MOVEMENTS = {
     { name: "Dead hang", focus: "Shoulder Health", sets: "2-3", reps: "20-30s", cue: "Relax into the hang with your shoulders gently switched on.", equipment: "Pull-up bar" },
     { name: "KB bottoms-up press", focus: "Shoulder Health", sets: "2-3", reps: "8-10/side", cue: "Light bell held upside down; squeeze the handle hard and press slowly.", equipment: "Light kettlebell" },
     { name: "DB Y-T-W raise", focus: "Shoulder Health", sets: "2-3", reps: "8-10", cue: "Chest on an incline bench, very light weights, thumbs up, squeeze the shoulder blades.", equipment: "Light dumbbells, bench" },
+    { name: "Band external rotations or face pulls", focus: "Shoulder Health", sets: "2-3", reps: "15", cue: "Light band, elbows high on face pulls or pinned to your side on rotations; slow and controlled.", equipment: "Band" },
     { name: "Side-lying DB external rotation", focus: "Shoulder Health", sets: "2-3", reps: "8-10/side", cue: "Elbow pinned to your side; rotate the weight up slowly.", equipment: "Light dumbbell" },
 
     // ---------- Conditioning: 8-10 rounds ----------

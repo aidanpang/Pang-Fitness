@@ -118,20 +118,6 @@ window.PROGRAM = {
           ],
           demo: ["weighted pull up"],
         } },
-        { name: "Bulgarian split squat", sets: 3, reps: "6/leg", rest: "60-90 sec", how: {
-          setup: "Stand in front of a bench, about a big step away. Put the top of your back foot on the bench, laces down. Hold dumbbells at your sides or one at your chest.",
-          steps: [
-            "Lower straight down until your back knee is just above the floor.",
-            "Keep your front knee pointing over your toes. A slight forward lean is fine.",
-            "Push through your whole front foot to stand back up. Do all reps on one leg, then switch.",
-          ],
-          avoid: [
-            "Pushing off the back foot. The front leg does the work.",
-            "Front foot too close to the bench, so your heel lifts. Shuffle it forward.",
-            "Front knee caving in. Slow down if you wobble.",
-          ],
-          demo: ["bulgarian split squat"],
-        } },
         { name: "Pallof press or side plank", sets: 3, reps: "30s/side", rest: "60-90 sec", how: {
           setup: "Pallof press: anchor a band at chest height. Stand side-on to it, a step or two away so the band is tight, feet shoulder-width, knees soft. Hold the band with both hands at your chest. Side plank: lie on your side, elbow directly under your shoulder, feet stacked.",
           steps: [
@@ -211,33 +197,6 @@ window.PROGRAM = {
           ],
           demo: ["turkish get up"],
         } },
-        { name: "Band external rotations or face pulls", sets: 3, reps: "15", rest: "60-90 sec", how: {
-          setup: "External rotations: anchor a band at elbow height and stand side-on to it. Hold the band in the hand farther from the anchor, elbow bent to 90 degrees and tucked to your side (a rolled towel between elbow and ribs helps). Face pulls: anchor a band at face height and hold it with both hands, palms down, arms out in front.",
-          steps: [
-            "External rotations: keeping your elbow pinned, rotate your forearm outward away from your belly, then come back slowly. Do all reps, then turn around and do the other arm.",
-            "Face pulls: pull the band toward your forehead with your elbows high and wide, finishing with your hands beside your ears.",
-            "Light band, slow and controlled, squeeze at the end of each rep.",
-          ],
-          avoid: [
-            "Going heavy. These are for healthy shoulders, not strength.",
-            "Elbow drifting away from your side (rotations) or dropping low (face pulls).",
-            "Leaning back to cheat the rep.",
-          ],
-          demo: ["band external rotation", "band face pull"],
-        } },
-        { name: "Hanging knee raises", sets: 3, reps: "10", rest: "60-90 sec", how: {
-          setup: "Hang from the bar, hands shoulder-width, shoulders pulled slightly down, legs together.",
-          steps: [
-            "Bring your knees up toward your chest by curling your hips and tucking your tailbone under, not just lifting your thighs.",
-            "Pause briefly at the top.",
-            "Lower slowly, without swinging, until your legs are straight.",
-          ],
-          avoid: [
-            "Swinging to build momentum. Stop the swing before the next rep.",
-            "Arching your lower back at the bottom.",
-          ],
-          demo: ["hanging knee raise"],
-        } },
       ],
     },
     {
@@ -301,33 +260,6 @@ window.PROGRAM = {
             "Grinding a slow rep. If you slow down, the set is done.",
           ],
           demo: ["chest to bar pull up strict"],
-        } },
-        { name: "Single-leg RDL", sets: 3, reps: "6/leg", rest: "60-90 sec", how: {
-          setup: "Stand on one leg with that knee slightly bent. Hold a dumbbell or kettlebell in the opposite hand. Hold something with your free hand for balance if you need to.",
-          steps: [
-            "Hinge forward at the hips while your free leg goes straight back behind you, in a line with your body.",
-            "Keep your hips level: the toes of your back foot point at the floor.",
-            "Lower until you feel a stretch in the standing leg's hamstring, or your body is close to parallel with the floor.",
-            "Drive through your standing foot and squeeze that glute to come back up. All reps, then switch legs.",
-          ],
-          avoid: [
-            "Your hip opening up and rotating to the side.",
-            "Rounding your back to reach lower.",
-          ],
-          demo: ["single leg romanian deadlift"],
-        } },
-        { name: "Farmer or suitcase carry", sets: 3, reps: "30m", rest: "60-90 sec", how: {
-          setup: "Farmer carry: a heavy dumbbell or kettlebell in each hand. Suitcase carry: a heavy weight in one hand only. Pick the weights up from beside your feet with a flat back, like a deadlift: hips back, chest up, push the floor away. Then stand tall, shoulders down and back, stomach braced.",
-          steps: [
-            "Walk 30 metres with short, quick, controlled steps.",
-            "Suitcase carry: stay perfectly upright, without leaning toward or away from the weight. Switch hands halfway through every set (15 m each hand) so both sides do the same work.",
-            "Put the weights down with a flat back, like a deadlift.",
-          ],
-          avoid: [
-            "Shrugging, or letting the weights pull your shoulders forward.",
-            "Leaning to one side, or rushing.",
-          ],
-          demo: ["farmer carry", "suitcase carry"],
         } },
       ],
     },
