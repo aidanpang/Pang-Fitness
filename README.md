@@ -9,6 +9,7 @@ A tiny iPhone web app for sticking to a 3-day-a-week weights program around surf
 - **Week** – the 7 days at a glance. Tap any lift day to see that workout (sets × reps, rest). Tapping today's lift day takes you to Today, where you tick things off.
 - **Library** – 32 extra movements grouped by focus (Power, Paddle & Pull, Legs & Balance, Rotation & Core, Shoulder Health, Conditioning), each with sets × reps, a coaching cue and equipment. Pick a focus at the top to filter.
 - **Swap or add** – on a day, tap ⇄ on an exercise to swap it for a library movement (or remove it), or tap **+ Add Movement**. The library slides up over the day. Changes stick to that session every week until you tap **Reset to Program**; `program.js` itself is never changed.
+- **Between sets** – a hips card on Today with one Mobility and one Strength movement to do while you rest. Each session has a default pair; tap **Swap** on a slot to pick another from that slot's list for today's session only. Timed holds (e.g. pigeon stretch, Copenhagen plank) get a **Start** countdown that talks you through each side.
 - **Settings** – pick your 3 lift days, and set/reset the start date of your 5-week cycle.
 - **5-week cycle** – shows "Week X of 5". Week 5 is the deload: sets are automatically halved.
 - **How to run it** – the rules are shown under every session.
@@ -21,6 +22,7 @@ Everything is saved on your phone only (in the browser). No accounts, no server.
 |---|---|
 | `program.js` | **Your program.** Exercises, warm-up, rules. This is the one to edit. |
 | `movements.js` | **The movement library.** Add or change movements here (same rules as `program.js`). |
+| `hips.js` | **The Between sets card.** Default pairs for each session and the Mobility and Strength lists. |
 | `index.html` | The app itself. You shouldn't need to touch it. |
 | `manifest.json`, `icon.png` | Home-screen name and icon. |
 
