@@ -203,6 +203,33 @@
   }
   .hip-swap::before { content: ""; position: absolute; inset: -6px -8px; }
   .hip-swap .icon { width: 17px; height: 17px; }
+  .hip-actions { display: inline-flex; align-items: center; gap: 2px; margin-right: -6px; }
+  .hip-info { position: relative; top: auto; right: auto; }
+  .hip-info::before { inset: -2px; }
+
+  /* rest-day stretch routine */
+  .rest-card .rr-head { padding: 16px 18px 4px; }
+  .rest-card .rr-head .rest { margin-top: 4px; }
+  .rest-card > .green-btn { width: auto; margin: 12px 18px 18px; }
+  .btn.green-btn { background: var(--green); color: var(--on-green); }
+  .list.rr li { display: block; min-height: 0; padding: 4px 0 8px; }
+  .rr-row { display: flex; align-items: center; gap: 8px; }
+  .rr-tick { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 6px 0; cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .rr-check { flex: 0 0 28px; height: 28px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--label-3); display: grid; place-items: center; }
+  .rr-check .icon.ok { width: 28px; height: 28px; }
+  .rr-item.done .rr-check { box-shadow: none; }
+  .rr-text { min-width: 0; }
+  .rr-text b { display: block; font-weight: 600; }
+  .rr-text span { display: block; font: 600 16px/1.3 var(--font-round); color: var(--green); }
+  .rr-item.done .rr-text b { color: var(--label-2); }
+  .list.rr .info { position: relative; top: auto; right: auto; }
+  .list.rr .info::before { inset: -3px -6px; }
+  .list.rr .timer, .list.rr .t-start { margin: 4px 10px 6px 40px; width: auto; }
+  @media (max-width: 360px) {
+    .list.rr .timer, .list.rr .t-start { margin-left: 0; }
+    .timer { gap: 10px; padding-left: 14px; }
+    .t-num { font-size: 42px; }
+  }
   .hip-name { display: block; font-size: 22px; line-height: 1.2; font-weight: 600; margin-top: 4px; }
   .hip-dose { display: block; margin-top: 2px; font: 600 20px/1.3 var(--font-round); color: var(--green); }
   .t-start { margin-top: 12px; }
@@ -351,6 +378,8 @@
       order: s.order && s.order.week === thisWeek && Array.isArray(s.order.list) ? s.order : null,   // swaps reset each week
       ticks: s.ticks && s.ticks.date === iso(today()) && s.ticks.done ? s.ticks : null,           // sets reset each day
       custom: cleanCustom(s.custom),       // sessions you've changed from the library, by session number
+      restDay: s.restDay && s.restDay.date === iso(today()) && s.restDay.done && typeof s.restDay.done === "object"   // rest-day stretch routine, today only
+        ? { date: s.restDay.date, open: !!s.restDay.open, done: s.restDay.done } : null,
       hipSwap: s.hipSwap && s.hipSwap.date === iso(today()) && typeof s.hipSwap.si === "number"   // "Between sets" swaps, today only
         ? { date: s.hipSwap.date, si: s.hipSwap.si, m: typeof s.hipSwap.m === "string" ? s.hipSwap.m : null, s: typeof s.hipSwap.s === "string" ? s.hipSwap.s : null }
         : null,
@@ -522,10 +551,14 @@
     }
     return '<button class="btn t-start" data-timer="' + k + '">' + icon("play") + "Start " + mv.hold + "s" + (mv.sides === 2 ? " × 2" : "") + "</button>";
   }
-  function startTimer(k) {
+  function timerMovement(k) {                // "m" / "s" = Between sets slots; "r3" = item 3 of the rest-day routine
+    var r = /^r(\d+)$/.exec(k);
+    if (r) return H && H.restDay && H.restDay.items[+r[1]] || null;
     var si = sessionFor(dayIdx(today()));
-    if (si < 0) return;
-    var mv = hipFor(si, k === "m" ? "mobility" : "strength");
+    return si < 0 ? null : hipFor(si, k === "m" ? "mobility" : "strength");
+  }
+  function startTimer(k) {
+    var mv = timerMovement(k);
     if (!mv || !mv.hold) return;
     var steps = timerSteps(mv);
     timer = { k: k, name: mv.name, steps: steps, i: 0, endAt: Date.now() + steps[0].secs * 1000, doneUntil: 0 };
@@ -554,13 +587,50 @@
     if (!mv) return "";
     var k = kind === "mobility" ? "m" : "s", sw = S.hipSwap;
     var swapped = live && sw && sw.date === iso(today()) && sw.si === si && sw[k] && hipFind(kind, sw[k]);
+    var howKey = "h" + k + H[kind].indexOf(mv);
+    var info = H.how && H.how[mv.name]
+      ? '<button class="info hip-info" data-how="' + howKey + '" aria-label="How to do ' + esc(mv.name) + '">' + icon("info") + "</button>" : "";
     var h = '<div class="hip-slot" id="hip-' + k + '"><div class="hip-top"><span class="hip-kind">' + (kind === "mobility" ? "Mobility" : "Strength") +
-      (swapped ? " · swapped" : "") + "</span>" +
-      (live ? '<button class="hip-swap" data-hipswap="' + kind + '" aria-label="Swap ' + kind + ' movement">' + icon("swap") + "Swap</button>" : "") + "</div>" +
+      (swapped ? " · swapped" : "") + '</span><span class="hip-actions">' + info +
+      (live ? '<button class="hip-swap" data-hipswap="' + kind + '" aria-label="Swap ' + kind + ' movement">' + icon("swap") + "Swap</button>" : "") + "</span></div>" +
       '<b class="hip-name">' + esc(mv.name) + '</b><span class="hip-dose">' + esc(mv.dose) + "</span>";
     if (live && mv.hold) h += timerBlock(k, mv);
     return h + "</div>";
   }
+  // ---------- optional stretch routine on rest / surf days ----------
+  function restOpen() { return !!(S.restDay && S.restDay.date === iso(today()) && S.restDay.open); }
+  function restDone(i) { return !!(S.restDay && S.restDay.date === iso(today()) && S.restDay.done[i]); }
+  function setRest(fn) {
+    var st = S.restDay && S.restDay.date === iso(today()) ? S.restDay : { date: iso(today()), open: false, done: {} };
+    fn(st); S.restDay = st; save(); render();
+  }
+  function restRoutine() {
+    var R = H && H.restDay;
+    if (!R || !Array.isArray(R.items) || !R.items.length) return "";
+    var h = '<h2 class="section-h">Optional</h2>';
+    if (!restOpen()) {
+      return h + '<div class="card rest-card"><div class="rr-head"><b class="hip-name">' + esc(R.title || "Stretch routine") + "</b>" +
+        (R.subtitle ? '<span class="rest">' + esc(R.subtitle) + "</span>" : "") + "</div>" +
+        '<button class="btn green-btn" id="rest-open">Start stretch routine</button></div>';
+    }
+    var n = R.items.filter(function (_, i) { return restDone(i); }).length;
+    h += '<div class="card rest-card open"><div class="rr-head"><b class="hip-name">' + esc(R.title || "Stretch routine") + "</b>" +
+      '<span class="rest" id="rest-count">' + n + " of " + R.items.length + " done</span></div><ul class=\"list rr\">";
+    R.items.forEach(function (mv, i) {
+      var d = restDone(i);
+      h += '<li class="rr-item' + (d ? " done" : "") + '"><div class="rr-row">' +
+        '<div role="button" tabindex="0" aria-pressed="' + d + '" class="rr-tick" data-rtick="' + i + '">' +
+        '<span class="rr-check" aria-hidden="true">' + (d ? icon("check", "ok") : "") + "</span>" +
+        '<span class="rr-text"><b>' + esc(mv.name) + "</b><span>" + esc(mv.dose) + "</span></span></div>" +
+        (H.how && H.how[mv.name] ? '<button class="info" data-how="hr' + i + '" aria-label="How to do ' + esc(mv.name) + '">' + icon("info") + "</button>" : "") +
+        "</div>" + (mv.hold ? timerBlock("r" + i, mv) : "") + "</li>";
+    });
+    h += "</ul></div>";
+    if (n === R.items.length) h += '<div class="callout green">' + icon("check", "ok") + "<span><b>Routine done</b>Nice. Enjoy the surf. 🌊</span></div>";
+    h += '<button class="btn" id="rest-close">Hide routine</button>';
+    return h;
+  }
+
   function hipCard(si, live) {
     if (!H) return "";
     return '<h2 class="section-h">' + esc(H.title || "Between sets") + '</h2><div class="card hips">' + hipSlot("mobility", si, live) + hipSlot("strength", si, live) + "</div>" +
@@ -729,6 +799,12 @@
       var ex = P.sessions[+m[1]] && exList(+m[1])[+m[2]];
       return ex && (ex.how || ex.cue) ? { title: ex.name, ex: ex, how: ex.how || null } : null;
     }
+    m = /^h([msr])(\d+)$/.exec(key);          // Between sets (m / s) and rest-day routine (r) movements
+    if (m && H) {
+      var pool = m[1] === "m" ? H.mobility : m[1] === "s" ? H.strength : (H.restDay && H.restDay.items) || [];
+      var mv = pool[+m[2]], hw = mv && H.how && H.how[mv.name];
+      return hw ? { title: mv.name, dose: mv.dose, how: hw } : null;
+    }
     return null;
   }
   function openHow(btn) {
@@ -736,6 +812,7 @@
     if (!it) return;
     var hw = it.how || { demo: [it.ex.name.toLowerCase()] }, h = "";
     if (it.ex) h += '<p class="rx">' + sets(it.ex, btn.dataset.dl === "1") + " × " + esc(it.ex.reps) + " · Rest " + esc(it.ex.rest) + "</p>";
+    if (it.dose) h += '<p class="rx">' + esc(it.dose) + "</p>";
     if (it.ex && it.ex.cue) h += "<h3>Cue</h3><p>" + esc(it.ex.cue) + "</p>";
     if (it.ex && it.ex.equipment) h += "<h3>Equipment</h3><p>" + esc(it.ex.equipment) + "</p>";
     if (hw.setup) h += "<h3>Set up</h3><p>" + esc(hw.setup) + "</p>";
@@ -824,6 +901,7 @@
       var r = header(longDate(t), "", "", cyclePill(ci));
       r += '<div class="rest-hero"><div class="wave" aria-hidden="true">🌊</div><h1>Rest Day</h1><p class="subtitle">Go surf.</p></div>';
       if (next) r += '<div class="group"><div class="row">Next lift<span class="value">' + esc(DAY_LONG[dayIdx(next)]) + "</span></div></div>";
+      r += restRoutine();
       return r + rulesNote();
     }
 
@@ -927,7 +1005,7 @@
       b.classList.toggle("active", on);
       if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
-    keepAwake(tab === "today" && sessionFor(dayIdx(today())) >= 0);
+    keepAwake(tab === "today" && (sessionFor(dayIdx(today())) >= 0 || restOpen()));
   }
 
   function go(t) { tab = t; confirmRestart = false; confirmReset = -1; window.scrollTo(0, 0); render(); }
@@ -940,6 +1018,7 @@
   }
   function selectorFor(el) {
     if (el.dataset.tick) return '[data-tick="' + el.dataset.tick + '"]';
+    if (el.dataset.rtick) return '[data-rtick="' + el.dataset.rtick + '"]';
     if (el.dataset.undo) return '[data-undo="' + el.dataset.undo + '"]';
     if (el.dataset.day) return '[data-day="' + el.dataset.day + '"]';
     if (el.id) return "#" + el.id;
@@ -957,7 +1036,7 @@
       if (e.target.closest("[data-remove]")) { removeMovement(); return; }
       return;
     }
-    var el = e.target.closest("button, [data-tick]");
+    var el = e.target.closest("button, [data-tick], [data-rtick]");
     var cardEl = !el && e.target.closest(".card.tickable");
     if (cardEl) el = cardEl.querySelector("[data-tick]");   // a tap anywhere else on a Today card logs a set
     if (!el) return;
@@ -979,6 +1058,9 @@
       return;
     }
     if (el.dataset.hipswap) { openHipSwap(el.dataset.hipswap); return; }
+    if (el.dataset.rtick) { var ri = +el.dataset.rtick; setRest(function (st) { if (st.done[ri]) delete st.done[ri]; else st.done[ri] = true; }); return; }
+    if (el.id === "rest-open") { setRest(function (st) { st.open = true; }); return; }
+    if (el.id === "rest-close") { if (timer && /^r/.test(timer.k)) stopTimer(true); setRest(function (st) { st.open = false; }); return; }
     if (el.dataset.timer) { startTimer(el.dataset.timer); return; }
     if (el.dataset.timerstop) { stopTimer(); return; }
     if (el.dataset.swap) { var sp = el.dataset.swap.split(":"); openLibrary("swap", +sp[0], +sp[1]); return; }
@@ -1016,6 +1098,8 @@
       }
       return;
     }
+    var rt = e.target.closest && e.target.closest("[data-rtick]");
+    if (rt && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); rt.click(); refocus('[data-rtick="' + rt.dataset.rtick + '"]'); return; }
     var el = e.target.closest && e.target.closest("[data-tick]");
     if (el && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
